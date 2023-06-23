@@ -47,13 +47,12 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end,
                 type = 'group',
-                name = 'Map Settings',
-                desc = 'Some description goes here',
+                name = AddonName..' Settings',
                 args = {
                     intro = {
                         order = 1,
                         type = 'description',
-                        name = 'A description goes here',
+                        name = 'You\'ll need to run /script SetCVar( \'mapFade\',0 ); for the fading to work correctly',
                     },
                     mapAlpha = {
                         order = 2,
