@@ -22,5 +22,4 @@ https://github.com/jadissa/jPvPMap/issues
 ## Screenshots
 <p float="left">
   <img src="KYzyloi.gif" width="400" />
-  <img src="MapSettings.png" width="400" />
 </p>
