@@ -49,11 +49,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 type = 'group',
                 name = AddonName..' Settings',
                 args = {
-                    intro = {
-                        order = 1,
-                        type = 'description',
-                        name = 'You\'ll need to run /script SetCVar( \'mapFade\',0 ); for the fading to work correctly',
-                    },
                     mapAlpha = {
                         order = 2,
                         type = 'range',
@@ -210,6 +205,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame:SetAlpha( Addon.MAP:GetValue( 'mapAlpha' ) );
             end );
             -- Map show
+            SetCVar( 'mapFade',0 );
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame, 'OnShow', function() 
                 WorldMapFrame:SetAlpha( Addon.MAP:GetValue( 'mapAlpha' ) );
                 Addon.MAP:UpdatePin();
