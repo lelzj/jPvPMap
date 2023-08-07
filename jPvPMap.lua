@@ -149,14 +149,17 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdateMap = function( self )
-            local x, y  = 0,0;
-            local pos   = C_Map.GetPlayerMapPosition( WorldMapFrame:GetMapID(), 'player' );
+            --[[
+            local x,y  = 0,0;
+            local pos  = C_Map.GetPlayerMapPosition( WorldMapFrame:GetMapID(),'player' );
             if pos then
-                x, y = pos:GetXY();
+                x,y = pos:GetXY();
             end
-            local mapInfo = C_Map.GetMapInfoAtPosition( WorldMapFrame:GetMapID(), x, y);
-            if mapInfo then
-                WorldMapFrame:SetMapID( mapInfo.mapID );
+            ]]
+            local mapID = C_Map.GetBestMapForUnit( 'player' );
+            --local mapInfo = C_Map.GetMapInfoAtPosition( WorldMapFrame:GetMapID(),x,y );
+            if mapID then
+                WorldMapFrame:SetMapID( mapID );
             end
         end
 
