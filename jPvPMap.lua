@@ -14,18 +14,20 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 mapAlpha = 0.2,
                 pinScale = 1,
                 pinAnimDuration = 90,
+                zoneUpdate = false,
+                skullMyAss = false,
             };
         end
 
         Addon.MAP.SetValue = function( self,Index,Value )
-            if( Addon.MAP.persistence[ Index ] ~= nil ) then
-                Addon.MAP.persistence[ Index ] = Value;
+            if( self.persistence[ Index ] ~= nil ) then
+                self.persistence[ Index ] = Value;
             end
         end
 
         Addon.MAP.GetValue = function( self,Index )
-            if( Addon.MAP.persistence[ Index ] ~= nil ) then
-                return Addon.MAP.persistence[ Index ];
+            if( self.persistence[ Index ] ~= nil ) then
+                return self.persistence[ Index ];
             end
         end
 
@@ -37,13 +39,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             return {
                 type = 'group',
                 get = function( Info )
-                    if( Addon.MAP.persistence[ Info.arg ] ~= nil ) then
-                        return Addon.MAP.persistence[ Info.arg ];
+                    if( self.persistence[ Info.arg ] ~= nil ) then
+                        return self.persistence[ Info.arg ];
                     end
                 end,
                 set = function( Info,Value )
-                    if( Addon.MAP.persistence[ Info.arg ] ~= nil ) then
-                        Addon.MAP.persistence[ Info.arg ] = Value;
+                    if( self.persistence[ Info.arg ] ~= nil ) then
+                        self.persistence[ Info.arg ] = Value;
                     end
                 end,
                 type = 'group',
@@ -73,6 +75,20 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         min = 10, max = 120, step = 10,
                         arg = 'pinAnimDuration',
                     },
+                    skullMyAss = {
+                        order = 5,
+                        type = 'toggle',
+                        name = 'skullMyAss',
+                        desc = 'Whether or not to display your pin as a skull',
+                        arg = 'skullMyAss',
+                    },
+                    zoneUpdate = {
+                        order = 6,
+                        type = 'toggle',
+                        name = 'zoneUpdate',
+                        desc = 'Whether or not the map should update when entering a new zone',
+                        arg = 'zoneUpdate',
+                    },
                 }
             };
             -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
@@ -83,15 +99,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.CreateFrames = function( self )
-            Addon.MAP.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
-            Addon.MAP.Config.okay = function( self )
-            	Addon.MAP:Refresh();
+            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
+            self.Config.okay = function( self )
+            	self:Refresh();
                 RestartGx();
             end
-            Addon.MAP.Config.default = function( self )
-                Addon.MAP.db:ResetDB();
+            self.Config.default = function( self )
+                self.db:ResetDB();
             end
-            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),Addon.MAP:GetSettings() );
+            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),self:GetSettings() );
         end
 
         --
@@ -115,13 +131,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdatePin = function( self )
-            local WorldMapUnitPin = Addon.MAP:GetUnitPin();
+            local WorldMapUnitPin = self:GetUnitPin();
             if( not WorldMapUnitPin ) then
                 return;
             end
-            local animation_scale   = Addon.MAP:GetValue( 'pinScale' );
-            local animation_seconds = Addon.MAP:GetValue( 'pinAnimDuration' );
-            --WorldMapUnitPin:SetPinTexture( 'player', 'Interface\\WorldMap\\Skull_64Purple' );
+            local animation_scale   = self:GetValue( 'pinScale' );
+            local animation_seconds = self:GetValue( 'pinAnimDuration' );
+            if( self:GetValue( 'skullMyAss' ) ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Purple' );
+            end
             WorldMapUnitPin:SetPlayerPingScale( animation_scale );
             WorldMapUnitPin:StartPlayerPing( 1, animation_seconds );
         end
@@ -147,7 +165,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.Refresh = function( self )
-            if( not Addon.MAP.persistence ) then
+            if( not self.persistence ) then
                 return;
             end
         end
@@ -158,14 +176,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.MAP.Init = function( self )
             -- Database
-            Addon.MAP.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.MAP:GetDefaults() },true );
-            if( not Addon.MAP.db ) then
+            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = self:GetDefaults() },true );
+            if( not self.db ) then
                 return;
             end
-            Addon.MAP.persistence = Addon.MAP.db.char;
-            if( not Addon.MAP.persistence ) then
+            self.persistence = self.db.char;
+            if( not self.persistence ) then
                 return;
             end
+            self.Events = CreateFrame( 'Frame' );
         end
 
         --
@@ -174,26 +193,32 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.MAP.Run = function( self )
             -- Unit moving
-            local WorldMapUnitPin = Addon.MAP:GetUnitPin();
+            local WorldMapUnitPin = self:GetUnitPin();
             LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin, 'OnMapChanged', function()
-                Addon.MAP:UpdatePin();
+                self:UpdatePin();
             end );
-            --[[Addon.MAP.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
-            Addon.MAP.Events:RegisterEvent( 'PLAYER_STARTED_LOOKING' );
-            Addon.MAP.Events:RegisterEvent( 'PLAYER_STARTED_TURNING' );
-            Addon.MAP.Events:SetScript( 'OnEvent',function( self,Event,... ) 
+            self.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
+            self.Events:RegisterEvent( 'PLAYER_STARTED_LOOKING' );
+            self.Events:RegisterEvent( 'PLAYER_STARTED_TURNING' );
+            if( self:GetValue( 'zoneUpdate' ) ) then
+                self.Events:RegisterEvent( 'ZONE_CHANGED_NEW_AREA' );
+            end
+            self.Events:SetScript( 'OnEvent',function( self,Event,... ) 
                 if( Event == 'PLAYER_STARTED_MOVING' 
                     or Event == 'PLAYER_STARTED_LOOKING' 
                     or Event == 'PLAYER_STARTED_TURNING' ) then
                     if( WorldMapFrame:IsShown() ) then
                         Addon.MAP:UpdatePin();
                     end
+                elseif( Event == 'ZONE_CHANGED_NEW_AREA' ) then
+                    Addon.MAP.UpdateMap();
                 end
-            end );]]
+            end );
+
             -- Unit pin scale
             if( WorldMapUnitPin ) then
                 LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin, 'SynchronizePinSizes', function() 
-                    WorldMapUnitPin:SetPlayerPingScale( Addon.MAP:GetValue( 'pinScale' ) );
+                    WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'pinScale' ) );
                 end );
             end
             -- Map mouseover
@@ -202,20 +227,20 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             -- Map mouseaway
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame.ScrollContainer,'OnLeave',function()
-                WorldMapFrame:SetAlpha( Addon.MAP:GetValue( 'mapAlpha' ) );
+                WorldMapFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
             end );
             -- Map show
             SetCVar( 'mapFade',0 );
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame, 'OnShow', function() 
-                WorldMapFrame:SetAlpha( Addon.MAP:GetValue( 'mapAlpha' ) );
-                Addon.MAP:UpdatePin();
+                WorldMapFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
+                self:UpdatePin();
             end );
         end
 
-        Addon.MAP:Init();
-        Addon.MAP:CreateFrames();
-        Addon.MAP:Refresh();
-        Addon.MAP:Run();
-        Addon.MAP:UnregisterEvent( 'ADDON_LOADED' );
+        self:Init();
+        self:CreateFrames();
+        self:Refresh();
+        self:Run();
+        self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );
