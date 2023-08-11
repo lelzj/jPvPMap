@@ -11,7 +11,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.MAP.GetDefaults = function( self )
             return {
-                mapAlpha = 0.2,
+                mapAlpha = 0.1,
                 pinScale = 1,
                 pinAnimDuration = 90,
                 zoneUpdate = false,
