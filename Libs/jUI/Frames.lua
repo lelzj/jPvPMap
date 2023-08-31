@@ -160,10 +160,9 @@ Addon.FRAMES.AddTip = function( self,VarData,Parent )
 end
 
 Addon.FRAMES.AddSeperator = function( self,Parent )
-  local Texture = Parent:CreateTexture( nil, 'ARTWORK', nil, 2 );
-  Texture:SetTexture( 'Interface\\Addons\\'..Addon.AddonName..'\\Textures\\seperator' );
-  Texture:SetSize( Parent:GetWidth( ), 2 );
-  Texture:SetAlpha( 0.1 );
+  local Texture = Parent:CreateTexture( nil, 'BACKGROUND', nil, 2 );
+  Texture:SetColorTexture( 39,39,39,.1 );
+  Texture:SetSize( Parent:GetWidth(),1 );
   return Texture;
 end
 
@@ -272,6 +271,10 @@ Addon.FRAMES.AddEdit = function( self,VarData,Parent,Handler )
     local Frame = CreateFrame( 'EditBox',Key..'Edit',Parent,'InputBoxTemplate' );
     Frame:SetAutoFocus( false );
     Frame:ClearFocus();
+    Frame:SetTextInsets( 0,0,3,3 );
+    if( VarData.Flagged ) then
+        Frame:Disable();
+    end
     Frame:SetFont( Addon.Theme.Font.Family, Addon.Theme.Font.Normal, Addon.Theme.Font.Flags );
     Frame:SetText( VarData.Value );
     Frame.keyValue = Key;
