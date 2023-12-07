@@ -238,6 +238,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
                 self:UpdatePin();
             end );
+            C_Timer.After( 2, function()
+                WorldMapFrame:SetFrameStrata( 'LOW' );
+            end );
         end
 
         self:Init();
