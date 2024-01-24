@@ -149,17 +149,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdateMap = function( self )
-            --[[
-            local x,y  = 0,0;
-            local pos  = C_Map.GetPlayerMapPosition( WorldMapFrame:GetMapID(),'player' );
-            if pos then
-                x,y = pos:GetXY();
-            end
-            ]]
-            local mapID = C_Map.GetBestMapForUnit( 'player' );
-            --local mapInfo = C_Map.GetMapInfoAtPosition( WorldMapFrame:GetMapID(),x,y );
-            if mapID then
-                WorldMapFrame:SetMapID( mapID );
+            local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
+            if CurrentZone then
+                WorldMapFrame:SetMapID( CurrentZone );
             end
         end
 
@@ -187,6 +179,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not self.persistence ) then
                 return;
             end
+            -- Events
             self.Events = CreateFrame( 'Frame' );
         end
 
@@ -195,51 +188,83 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.Run = function( self )
-            -- Unit moving
             local WorldMapUnitPin = self:GetUnitPin();
-            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin, 'OnMapChanged', function()
-                self:UpdatePin();
-            end );
+
+            -- Map hooks
+            if( WorldMapUnitPin ) then
+                LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'OnMapChanged',function()
+                    self:UpdatePin();
+                end );
+            end
             self.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_LOOKING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_TURNING' );
-            if( self:GetValue( 'zoneUpdate' ) ) then
-                self.Events:RegisterEvent( 'ZONE_CHANGED_NEW_AREA' );
-            end
-            self.Events:SetScript( 'OnEvent',function( self,Event,... ) 
+
+            self.Events:SetScript( 'OnEvent',function( self,Event,... )
+                -- Player movement
                 if( Event == 'PLAYER_STARTED_MOVING' 
                     or Event == 'PLAYER_STARTED_LOOKING' 
                     or Event == 'PLAYER_STARTED_TURNING' ) then
                     if( WorldMapFrame:IsShown() ) then
                         Addon.MAP:UpdatePin();
                     end
-                elseif( Event == 'ZONE_CHANGED_NEW_AREA' ) then
-                    Addon.MAP.UpdateMap();
                 end
             end );
 
             -- Unit pin scale
             if( WorldMapUnitPin ) then
-                LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin, 'SynchronizePinSizes', function() 
+                LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
                     WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'pinScale' ) );
                 end );
             end
-            -- Map mouseover
-            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame.ScrollContainer,'OnEnter',function()
+            --[[
+            -- commented out bc currently overwriting whatever OnEnter hook already exists
+            -- i'm not seeing an OnEnter attatched to QuestScrollFrame.DetailFrame.OnEnter however
+            -- /wow-retail-source/Interface/FrameXML/QuestMapFrame.lua
+
+            -- Quest mouseover
+            LibStub( 'AceHook-3.0' ):SecureHookScript( QuestScrollFrame.DetailFrame,'OnEnter',function()
                 WorldMapFrame:SetAlpha( 1 );
+                QuestScrollFrame.DetailFrame:SetAlpha( 1 );
             end );
-            -- Map mouseaway
-            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame.ScrollContainer,'OnLeave',function()
+            -- Quest mouseaway
+            LibStub( 'AceHook-3.0' ):SecureHookScript( QuestScrollFrame.DetailFrame,'OnLeave',function()
                 WorldMapFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
+                QuestScrollFrame.DetailFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
             end );
+            ]]
             -- Map show
             SetCVar( 'mapFade',0 );
-            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame, 'OnShow', function() 
-                WorldMapFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
+            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map ) 
+                Map:SetAlpha( self:GetValue( 'mapAlpha' ) );
                 self:UpdatePin();
+                local PreviousZone = C_Map.GetBestMapForUnit( 'player' );
+                if( PreviousZone ) then
+                    self.PreviousZone = PreviousZone;
+                end
             end );
+            -- Map update
+            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnUpdate',function( Map )
+                -- Focus
+                if( not Map:IsMouseOver() ) then
+                    WorldMapFrame:SetAlpha( self:GetValue( 'mapAlpha' ) );
+                -- Unfocus
+                else
+                    WorldMapFrame:SetAlpha( 1 );
+                end
+                -- Zone change
+                local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
+                if( ( CurrentZone and self.PreviousZone ) and CurrentZone ~= self.PreviousZone ) then
+                    if( self:GetValue( 'zoneUpdate' ) ) then
+                        self.PreviousZone = CurrentZone;
+                        Addon.MAP.UpdateMap();
+                    end
+                end
+            end );
+            -- Map strata
             C_Timer.After( 2, function()
                 WorldMapFrame:SetFrameStrata( 'LOW' );
+                --WorldMapFrame:EnableMouse( false );
             end );
         end
 
