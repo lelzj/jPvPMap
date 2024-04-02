@@ -16,6 +16,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 pinAnimDuration = 90,
                 zoneUpdate = false,
                 skullMyAss = false,
+                AlwaysShow = false,
+                IsMovable = true,
             };
         end
 
@@ -79,15 +81,29 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         order = 5,
                         type = 'toggle',
                         name = 'skullMyAss',
-                        desc = 'Whether or not to display your pin as a skull',
+                        desc = 'Whether or not to display your position on the map as a skull',
                         arg = 'skullMyAss',
                     },
                     zoneUpdate = {
                         order = 6,
                         type = 'toggle',
                         name = 'zoneUpdate',
-                        desc = 'Whether or not the map should update when entering a new zone',
+                        desc = 'Whether or not the map should update when you enter a new zone',
                         arg = 'zoneUpdate',
+                    },
+                    AlwaysShow = {
+                        order = 7,
+                        type = 'toggle',
+                        name = 'AlwaysShow',
+                        desc = 'Whether or not the map should open if you move and it is not already open',
+                        arg = 'AlwaysShow',
+                    },
+                    IsMovable = {
+                        order = 7,
+                        type = 'toggle',
+                        name = 'IsMovable',
+                        desc = 'Whether or not the map should not be movable',
+                        arg = 'IsMovable',
                     },
                 }
             };
@@ -208,6 +224,10 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( WorldMapFrame:IsShown() ) then
                         Addon.MAP:UpdatePin();
                     end
+
+                    if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
+                        WorldMapFrame:Show();
+                    end
                 end
             end );
 
@@ -261,9 +281,19 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end );
-            -- Map strata
             C_Timer.After( 2, function()
                 WorldMapFrame:SetFrameStrata( 'LOW' );
+
+                -- Map move
+                WorldMapFrame:SetMovable( Addon.MAP:GetValue( 'IsMovable' ) );
+                LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnDragStart',function( Map )
+                    print( Map,'hooked' )
+                    if( not Addon.MAP:GetValue( 'IsMovable' ) ) then
+                        print( 'prevented' )
+                        return false;
+                    end
+                end );
+                
                 --WorldMapFrame:EnableMouse( false );
             end );
         end
