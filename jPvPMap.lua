@@ -11,7 +11,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.MAP.GetDefaults = function( self )
             return {
-                mapAlpha = 0.1,
+                mapAlpha = 0.2,
                 pinScale = 1,
                 pinAnimDuration = 90,
                 zoneUpdate = false,
@@ -287,10 +287,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 -- Map move
                 WorldMapFrame:SetMovable( Addon.MAP:GetValue( 'IsMovable' ) );
                 LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnDragStart',function( Map )
-                    print( Map,'hooked' )
                     if( not Addon.MAP:GetValue( 'IsMovable' ) ) then
-                        print( 'prevented' )
-                        return false;
+                        Map:StopMovingOrSizing();
                     end
                 end );
                 
