@@ -206,37 +206,35 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.MAP.Run = function( self )
             local WorldMapUnitPin = self:GetUnitPin();
 
-            -- Map hooks
-            if( WorldMapUnitPin ) then
-                LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'OnMapChanged',function()
-                    self:UpdatePin();
-                end );
+            -- Map events
+            if( not WorldMapUnitPin ) then
+                return;
             end
+            
+            SetCVar( 'mapFade',0 );
+
+            -- Movement
             self.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_LOOKING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_TURNING' );
-
             self.Events:SetScript( 'OnEvent',function( self,Event,... )
-                -- Player movement
-                if( Event == 'PLAYER_STARTED_MOVING' 
-                    or Event == 'PLAYER_STARTED_LOOKING' 
-                    or Event == 'PLAYER_STARTED_TURNING' ) then
-                    if( WorldMapFrame:IsShown() ) then
-                        Addon.MAP:UpdatePin();
-                    end
+                if( WorldMapFrame:IsShown() ) then
+                    Addon.MAP:UpdatePin();
+                end
 
-                    if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
-                        WorldMapFrame:Show();
-                    end
+                if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
+                    WorldMapFrame:Show();
                 end
             end );
+            
+            -- Pin update
+            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'OnMapChanged',function()
+                self:UpdatePin();
+            end );
+            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
+                WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'pinScale' ) );
+            end );
 
-            -- Unit pin scale
-            if( WorldMapUnitPin ) then
-                LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
-                    WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'pinScale' ) );
-                end );
-            end
             --[[
             -- commented out bc currently overwriting whatever OnEnter hook already exists
             -- i'm not seeing an OnEnter attatched to QuestScrollFrame.DetailFrame.OnEnter however
@@ -254,7 +252,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             ]]
             -- Map show
-            SetCVar( 'mapFade',0 );
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map ) 
                 Map:SetAlpha( self:GetValue( 'mapAlpha' ) );
                 self:UpdatePin();
