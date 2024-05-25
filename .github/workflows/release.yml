@@ -14,8 +14,6 @@ jobs:
         uses: actions/checkout@v4
         with: 
           repository: jadissa/jUI
-          path: jUI
-      - name: Copy Dependencies
-        run: cp -R ./jUI ./Libs/
+          path: Libs/jUI/
       - name: Debug # just to debug
         run: find .
