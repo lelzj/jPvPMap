@@ -10,9 +10,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install jUI
-        run: git clone https://github.com/jadissa/jUI.git Libs/jUI
-      - name: Install 
-        run: svn checkout https://repos.wowace.com/wow/libstub/trunk Libs/LibStub
+      - name: Install Dependencies
+        uses: actions/checkout@v4
+        with: 
+          repository: jadissa/jUI
+          path: Libs/jUI/
+          uses: Libs/jUI/
       - name: Debug # just to debug
         run: find .
