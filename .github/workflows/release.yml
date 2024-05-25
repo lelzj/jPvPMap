@@ -15,7 +15,7 @@ jobs:
         with: 
           repository: jadissa/jUI
           path: jUI
-      - Copy Dependencies
+      - name: Copy Dependencies
         run: cp -R ./jUI ./Libs/
       - name: Debug # just to debug
         run: find .
