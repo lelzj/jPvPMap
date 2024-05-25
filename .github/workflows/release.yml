@@ -14,4 +14,4 @@ jobs:
         uses: actions/checkout@v4
         with: 
           repository: jadissa/jUI
-          path: ./Libs/jUI
+          path: './Libs/jUI'
