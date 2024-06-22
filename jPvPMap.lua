@@ -18,6 +18,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 skullMyAss = false,
                 AlwaysShow = false,
                 IsMovable = true,
+                PanelColapsed = true,
             };
         end
 
@@ -56,54 +57,61 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     mapAlpha = {
                         order = 2,
                         type = 'range',
-                        name = 'mapAlpha',
+                        name = 'Map Alpha',
                         desc = 'Main map alpha',
                         min = 0.1, max = 1, step = 0.1,
                         arg = 'mapAlpha',
                     },
-                    pinScale = {
-                        order = 3,
-                        type = 'range',
-                        name = 'pinScale',
-                        desc = 'Main map player pin scale',
-                        min = 1, max = 2, step = 1,
-                        arg = 'pinScale',
-                    },
-                    pinAnimDuration = {
-                        order = 4,
-                        type = 'range',
-                        name = 'pinAnimDuration',
-                        desc = 'Main map player pin animation duration',
-                        min = 10, max = 120, step = 10,
-                        arg = 'pinAnimDuration',
-                    },
-                    skullMyAss = {
-                        order = 5,
-                        type = 'toggle',
-                        name = 'skullMyAss',
-                        desc = 'Whether or not to display your position on the map as a skull',
-                        arg = 'skullMyAss',
-                    },
-                    zoneUpdate = {
-                        order = 6,
-                        type = 'toggle',
-                        name = 'zoneUpdate',
-                        desc = 'Whether or not the map should update when you enter a new zone',
-                        arg = 'zoneUpdate',
-                    },
                     AlwaysShow = {
-                        order = 7,
+                        order = 3,
                         type = 'toggle',
-                        name = 'AlwaysShow',
+                        name = 'Always Show Map',
                         desc = 'Whether or not the map should open if you move and it is not already open',
                         arg = 'AlwaysShow',
                     },
                     IsMovable = {
-                        order = 7,
+                        order = 4,
                         type = 'toggle',
-                        name = 'IsMovable',
+                        name = 'Map Movable',
                         desc = 'Whether or not the map should not be movable',
                         arg = 'IsMovable',
+                    },
+                    skullMyAss = {
+                        order = 5,
+                        type = 'toggle',
+                        name = 'Skull Your Position',
+                        desc = 'Whether or not to display your position on the map as a skull',
+                        arg = 'skullMyAss',
+                    },
+                    pinScale = {
+                        order = 6,
+                        type = 'range',
+                        name = 'Your Position\'s Scale',
+                        desc = 'Main map player location scale',
+                        min = 1, max = 2, step = 1,
+                        arg = 'pinScale',
+                    },
+                    pinAnimDuration = {
+                        order = 7,
+                        type = 'range',
+                        name = 'Animation Duration',
+                        desc = 'Main map player location animation duration',
+                        min = 10, max = 120, step = 10,
+                        arg = 'pinAnimDuration',
+                    },
+                    zoneUpdate = {
+                        order = 8,
+                        type = 'toggle',
+                        name = 'Always Move to Zone',
+                        desc = 'Whether or not the map should update when you enter a new zone',
+                        arg = 'zoneUpdate',
+                    },
+                    PanelColapsed = {
+                        order = 9,
+                        type = 'toggle',
+                        name = 'Quest Panel Closed',
+                        desc = 'Whether or not the retail version of the map should expand the quest list',
+                        arg = 'PanelColapsed',
                     },
                 }
             };
@@ -211,7 +219,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return;
             end
             
-            SetCVar( 'mapFade',0 );
+            SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
 
             -- Movement
             self.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
@@ -252,7 +260,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             ]]
             -- Map show
-            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map ) 
+            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map )
                 Map:SetAlpha( self:GetValue( 'mapAlpha' ) );
                 self:UpdatePin();
                 local PreviousZone = C_Map.GetBestMapForUnit( 'player' );
