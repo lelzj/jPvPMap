@@ -294,11 +294,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Update
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnUpdate',function( Map )
                 -- Focus
-                if( not Map:IsMouseOver() ) then
-                    WorldMapFrame:SetAlpha( self:GetValue( 'Alpha' ) );
-                -- Unfocus
-                else
+                if( self.Scaling == true ) then
                     WorldMapFrame:SetAlpha( 1 );
+                else
+                    if( not Map:IsMouseOver() ) then
+                        WorldMapFrame:SetAlpha( self:GetValue( 'Alpha' ) );
+                    -- Unfocus
+                    else
+                        WorldMapFrame:SetAlpha( 1 );
+                    end
                 end
                 -- Zone change
                 local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
