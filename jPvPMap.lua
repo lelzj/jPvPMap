@@ -11,11 +11,11 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.MAP.GetDefaults = function( self )
             return {
-                x = 40,
-                y = -40,
+                x = 15.480,
+                y = -48.181,
                 point = 'TOPLEFT',
-                scale = 1.06,
-                
+                scale = 0.866,
+
                 MapAlpha = 0.2,
                 PinScale = 1,
                 PinAnimDuration = 90,
@@ -251,32 +251,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            --[[
-            -- commented out bc currently overwriting whatever OnEnter hook already exists
-            -- i'm not seeing an OnEnter attatched to QuestScrollFrame.DetailFrame.OnEnter however
-            -- /wow-retail-source/Interface/FrameXML/QuestMapFrame.lua
-
-            -- Quest mouseover
-            LibStub( 'AceHook-3.0' ):SecureHookScript( QuestScrollFrame.DetailFrame,'OnEnter',function()
-                WorldMapFrame:SetAlpha( 1 );
-                QuestScrollFrame.DetailFrame:SetAlpha( 1 );
-            end );
-            -- Quest mouseaway
-            LibStub( 'AceHook-3.0' ):SecureHookScript( QuestScrollFrame.DetailFrame,'OnLeave',function()
-                WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
-                QuestScrollFrame.DetailFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
-            end );
-            ]]
             -- Show
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map )
-                Map:SetAlpha( self:GetValue( 'MapAlpha' ) );
-                self:SetPosition();
-                self:UpdatePin();
                 local PreviousZone = C_Map.GetBestMapForUnit( 'player' );
                 if( PreviousZone ) then
                     self.PreviousZone = PreviousZone;
                 end
+                self:Refresh();
             end );
+
             -- Update
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnUpdate',function( Map )
                 -- Focus
@@ -295,6 +278,14 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end );
+
+            -- Position
+            WorldMapFrame:SetMovable( true );
+            WorldMapFrame:RegisterForDrag( 'LeftButton' );
+            WorldMapFrame:SetScript( 'OnDragStart',self.WorldMapFrameStartMoving );
+            WorldMapFrame:SetScript( 'OnDragStop',self.WorldMapFrameStopMoving );
+            
+            --WorldMapFrame:EnableMouse( false );
         end
 
         --
@@ -347,9 +338,27 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.Refresh = function( self )
+            -- Verify
+            if( not self.db ) then
+                return;
+            end
+            self.persistence = self.db.profile;
             if( not self.persistence ) then
                 return;
             end
+            if( not WorldMapFrame ) then
+                return;
+            end
+
+            -- Passback
+            local Point,RelativeTo,RelativePoint,x,y = WorldMapFrame:GetPoint();
+            WorldMapFrame.x,WorldMapFrame.y = x,y;
+
+            -- Settings
+            WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
+            WorldMapFrame:SetFrameStrata( 'LOW' );
+            self:SetPosition();
+            self:UpdatePin();
         end
 
         --
@@ -377,6 +386,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.MAP.Run = function( self )
             -- Verify
+            if( not self.db ) then
+                return;
+            end
+            self.persistence = self.db.profile;
+            if( not self.persistence ) then
+                return;
+            end
             if( not WorldMapFrame ) then
                 return;
             end
@@ -385,22 +401,10 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
 
             C_Timer.After( 2, function()
-                -- Strata
-                WorldMapFrame:SetFrameStrata( 'LOW' );
-
-                -- Position
-                WorldMapFrame:SetMovable( true );
-                WorldMapFrame:RegisterForDrag( 'LeftButton' );
-                WorldMapFrame:SetScript( 'OnDragStart',self.WorldMapFrameStartMoving );
-                WorldMapFrame:SetScript( 'OnDragStop',self.WorldMapFrameStopMoving );
-                self:SetPosition();
-
-                -- Passback
-                local _,_,_,x,y = WorldMapFrame:GetPoint();
-                WorldMapFrame.x,WorldMapFrame.y = x,y;
-                
-                --WorldMapFrame:EnableMouse( false );
+               self:Refresh();
             end );
+
+            --Addon:Dump( self.persistence )
         end
 
         self:Init();
