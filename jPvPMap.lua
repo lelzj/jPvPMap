@@ -11,13 +11,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.MAP.GetDefaults = function( self )
             return {
-                x = 15.480,
-                y = -48.181,
-                point = 'TOPLEFT',
-                scale = 0.866,
+                Point = 'TOPLEFT',
+                RelativeTo = 'UIParent',
+                RelativePoint = nil,
+                XPos = 15.480,
+                YPos = -48.181,
+                MapScale = 0.866,
 
-                MapAlpha = 0.2,
-                PinScale = 1,
+                Alpha = 0.2,
+                PinScale = 2,
                 PinAnimDuration = 90,
                 ZoneUpdate = true,
                 SkullMyAss = true,
@@ -68,13 +70,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 type = 'group',
                 name = AddonName..' Settings',
                 args = {
-                    MapAlpha = {
+                    Alpha = {
                         order = 2,
                         type = 'range',
                         name = 'Map Alpha',
                         desc = 'Main map alpha',
                         min = 0.1, max = 1, step = 0.1,
-                        arg = 'MapAlpha',
+                        arg = 'Alpha',
                     },
                     AlwaysShow = {
                         order = 3,
@@ -140,7 +142,24 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.MAP.WorldMapFrameStopMoving = function( self )
             WorldMapFrame:StopMovingOrSizing();
             if not WorldMapFrame:IsMaximized() then
-                Addon.MAP.Container.SavePosition( WorldMapFrame );
+                local Point,RelativeTo,RelativePoint,XPos,YPos = WorldMapFrame:GetPoint();
+                if( XPos ~= nil and YPos ~= nil ) then
+                    Addon.MAP:SetValue( 'Point',Point );
+                    Addon.MAP:SetValue( 'RelativeTo',RelativeTo or 'UIParent' );
+                    Addon.MAP:SetValue( 'RelativePoint',RelativePoint );
+                    Addon.MAP:SetValue( 'XPos',XPos );
+                    Addon.MAP:SetValue( 'YPos',YPos );
+                    --[[
+                    Addon:Dump( {
+                        Action = 'Saving',
+                        Point = Addon.MAP:GetValue( 'Point' ),
+                        RelativeTo = Addon.MAP:GetValue( 'RelativeTo' ), 
+                        RelativePoint = Addon.MAP:GetValue( 'RelativePoint' ), 
+                        XPos = Addon.MAP:GetValue( 'XPos' ), 
+                        YPos = Addon.MAP:GetValue( 'YPos' ), 
+                    } );
+                    ]]
+                end
             end
         end
 
@@ -159,8 +178,24 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.SetPosition = function( self )
+            local Point,RelativeTo,RelativePoint,XPos,YPos;
             if( not WorldMapFrame:IsMaximized() ) then
-                Addon.MAP.Container.RestorePosition( WorldMapFrame );
+                Point,RelativeTo,RelativePoint,XPos,YPos = self:GetValue( 'Point' ),self:GetValue( 'RelativeTo' ),self:GetValue( 'RelativePoint' ),self:GetValue( 'XPos' ),self:GetValue( 'YPos' );
+                if( XPos ~= nil and YPos ~= nil ) then
+                    --[[
+                    Addon:Dump( {
+                        Action = 'Loading',
+                        Point = self:GetValue( 'Point' ),
+                        RelativeTo = self:GetValue( 'RelativeTo' ), 
+                        RelativePoint = self:GetValue( 'RelativePoint' ), 
+                        XPos = self:GetValue( 'XPos' ), 
+                        YPos = self:GetValue( 'YPos' ), 
+                    } );
+                    ]]
+                    WorldMapFrame:ClearAllPoints();
+                    WorldMapFrame:SetPoint( Point,RelativeTo,RelativePoint,XPos,YPos );
+                    WorldMapFrame:SetScale( self:GetValue( 'MapScale' ) );
+                end
             end
         end
 
@@ -188,10 +223,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Events
             self.Events = CreateFrame( 'Frame' );
-
-            -- Container
-            self.Container = LibStub( 'LibWindow-1.1' );
-            self.Container.RegisterConfig( WorldMapFrame,self.persistence );
 
             -- Movement
             self.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
@@ -241,13 +272,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self:GetParent():ClearAllPoints();
                     self:GetParent():SetScale( self:GetParent():GetScale() * s );
                     self:GetParent():SetPoint( p,rt,rp,x,y );
-                    self:GetParent().x, self:GetParent().y = x, y;
+                    self:GetParent().x,self:GetParent().y = x,y;
                 end
             end );
             WorldMapFrame.Resize:SetScript( 'OnMouseUp',function( self,Button )
                 if( Button == 'LeftButton' ) then
                     Addon.MAP.Scaling = false;
-                    Addon.MAP:SetValue( 'scale',WorldMapFrame:GetScale() );
+                    Addon.MAP:SetValue( 'MapScale',WorldMapFrame:GetScale() );
                 end
             end );
 
@@ -264,7 +295,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnUpdate',function( Map )
                 -- Focus
                 if( not Map:IsMouseOver() ) then
-                    WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
+                    WorldMapFrame:SetAlpha( self:GetValue( 'Alpha' ) );
                 -- Unfocus
                 else
                     WorldMapFrame:SetAlpha( 1 );
@@ -355,7 +386,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             WorldMapFrame.x,WorldMapFrame.y = x,y;
 
             -- Settings
-            WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
+            WorldMapFrame:SetAlpha( self:GetValue( 'Alpha' ) );
             WorldMapFrame:SetFrameStrata( 'LOW' );
             self:SetPosition();
             self:UpdatePin();
@@ -378,6 +409,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapFrame ) then
                 return;
             end
+            --self.db:ResetDB();
         end
 
         --
@@ -399,6 +431,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             
             -- Cvars
             SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
+            --SetCVar( 'mapFade',0 );
 
             C_Timer.After( 2, function()
                self:Refresh();
@@ -409,7 +442,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         self:Init();
         self:CreateFrames();
-        self:Refresh();
         self:Run();
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
