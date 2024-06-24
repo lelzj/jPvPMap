@@ -97,7 +97,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         type = 'range',
                         name = 'Your Position\'s Scale',
                         desc = 'Main map player location scale',
-                        min = 1, max = 2, step = 1,
+                        min = 1, max = 5, step = 1,
                         arg = 'PinScale',
                         set = function( Info,Value )
                             self:SetValue( 'PinScale',Value );
@@ -229,13 +229,11 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.Events:RegisterEvent( 'PLAYER_STARTED_LOOKING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_TURNING' );
             self.Events:SetScript( 'OnEvent',function( self,Event,... )
-                if( WorldMapFrame:IsShown() ) then
-                    Addon.MAP:UpdatePin();
-                end
-
+                Addon.MAP:UpdatePin();
                 if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
                     WorldMapFrame:Show();
                 end
+                Addon.MAP.UpdateMap();
             end );
             
             -- Pin
@@ -243,8 +241,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self:UpdatePin();
             end );
             LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
-                WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'PinScale' ) );
+                self:UpdatePin();
             end );
+            self:UpdatePin();
 
             -- Scale
             WorldMapFrame.Resize = CreateFrame( 'Button','resize',WorldMapFrame );
@@ -348,13 +347,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapUnitPin ) then
                 return;
             end
-            local animation_scale   = self:GetValue( 'PinScale' );
-            local animation_seconds = self:GetValue( 'PinAnimDuration' );
+            WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'PinScale' ) );
+            WorldMapUnitPin:StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
+            WorldMapUnitPin:SetPinSize( 'player',64 );
             if( self:GetValue( 'SkullMyAss' ) ) then
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Purple' );
             end
-            WorldMapUnitPin:SetPlayerPingScale( animation_scale );
-            WorldMapUnitPin:StartPlayerPing( 1,animation_seconds );
+            WorldMapUnitPin:SetUseClassColor( 'party',true );
+            WorldMapUnitPin:SetUseClassColor( 'raid',true );
+            WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
         end
 
         --
