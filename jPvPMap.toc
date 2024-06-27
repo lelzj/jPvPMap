@@ -7,7 +7,7 @@
 ## X-Realm: Moonguard/Grobbulus/Whitemane
 ## X-Website: https://github.com/jadissa/jPvPMap
 ## X-Curse-Project-ID: 1051842
-## X-WoWI-ID: 26743
+## X-WoWI-ID: 26765
 ## X-Wago-ID: QNlqea6e
 
 ## DefaultState: disabled
