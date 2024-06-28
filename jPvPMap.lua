@@ -343,13 +343,28 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdatePin = function( self )
+            if( not WorldMapFrame.ScrollContainer.Child ) then
+                return;
+            end
             local WorldMapUnitPin = self:GetUnitPin();
             if( not WorldMapUnitPin ) then
                 return;
             end
             WorldMapUnitPin:SetPlayerPingScale( self:GetValue( 'PinScale' ) );
             WorldMapUnitPin:StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
+
             WorldMapUnitPin:SetPinSize( 'player',64 );
+            WorldMapUnitPin:SetPinSize( 'party',64 );
+            WorldMapUnitPin:SetPinSize( 'raid',64 );
+
+            local Scale = WorldMapFrame.ScrollContainer.Child:GetEffectiveScale();
+
+            if( Scale < .1 ) then
+                WorldMapUnitPin:SetPinSize( 'player',256 );
+                WorldMapUnitPin:SetPinSize( 'party',256 );
+                WorldMapUnitPin:SetPinSize( 'raid',256 );
+            end
+
             if( self:GetValue( 'SkullMyAss' ) ) then
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Purple' );
             end
