@@ -165,10 +165,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             
             -- Pin
-            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'OnMapChanged',function()
-                print( 'map changing' )
-                self:UpdatePin();
-            end );
             LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
                 self:UpdatePin();
             end );
