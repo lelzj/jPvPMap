@@ -339,10 +339,10 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             if( self:GetValue( 'MatchWorldScale' ) ) then
                 if( WorldMapFrame.ScrollContainer.Child:GetEffectiveScale() < .1 ) then
-                    WorldMapUnitPin:SetPinSize( 'player',256 );
-                    WorldMapUnitPin:SetPinSize( 'party',256 );
-                    WorldMapUnitPin:SetPinSize( 'raid',256 );
                     WorldMapUnitPin:SetPlayerPingScale( 2 * 5 );
+                    WorldMapUnitPin:SetPinSize( 'player',256 );
+                    --WorldMapUnitPin:SetPinSize( 'party',256 );
+                    --WorldMapUnitPin:SetPinSize( 'raid',256 );
                 end
             end
 
@@ -355,8 +355,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             else
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\WorldMapArrow' );
             end
-            WorldMapUnitPin:SetUseClassColor( 'party',true );
-            WorldMapUnitPin:SetUseClassColor( 'raid',true );
+            --WorldMapUnitPin:SetUseClassColor( 'party',true );
+            --WorldMapUnitPin:SetUseClassColor( 'raid',true );
             WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
 
             WorldMapUnitPin:StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
