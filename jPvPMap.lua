@@ -333,8 +333,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return;
             end
             WorldMapUnitPin:SetPinSize( 'player',64 );
-            WorldMapUnitPin:SetPinSize( 'party',64 );
-            WorldMapUnitPin:SetPinSize( 'raid',64 );
+            --WorldMapUnitPin:SetPinSize( 'party',64 );
+            --WorldMapUnitPin:SetPinSize( 'raid',64 );
             WorldMapUnitPin:SetPlayerPingScale( 3 );
 
             if( self:GetValue( 'MatchWorldScale' ) ) then
