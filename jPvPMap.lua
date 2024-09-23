@@ -171,8 +171,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Scale
             WorldMapFrame.Resize = CreateFrame( 'Button','resize',WorldMapFrame );
-            WorldMapFrame.Resize:SetSize( 16,16 );
-            WorldMapFrame.Resize:SetPoint( 'bottomright' );
+            WorldMapFrame.Resize:SetSize( 32,32 );
+            WorldMapFrame.Resize:SetPoint( 'bottomright',15,-15 );
             WorldMapFrame.Resize:SetNormalTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up' );
             WorldMapFrame.Resize:SetHighlightTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight' );
             WorldMapFrame.Resize:SetPushedTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down' );
