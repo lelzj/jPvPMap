@@ -338,12 +338,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             WorldMapUnitPin:SetPlayerPingScale( 3 );
 
             if( self:GetValue( 'MatchWorldScale' ) ) then
-                if( WorldMapFrame.ScrollContainer.Child:GetEffectiveScale() < .1 ) then
+                if( WorldMapFrame.ScrollContainer.Child:GetEffectiveScale() < .5 ) then
                     WorldMapUnitPin:SetPlayerPingScale( 2 * 5 );
-                    WorldMapUnitPin:SetPinSize( 'player',256 );
+                    WorldMapUnitPin:SetPinSize( 'player',192 );
                     --WorldMapUnitPin:SetPinSize( 'party',256 );
                     --WorldMapUnitPin:SetPinSize( 'raid',256 );
                 end
+                --WorldMapUnitPin:SynchronizePinSizes();
             end
 
             if( self:GetValue( 'SkullMyAss' ) ) then
