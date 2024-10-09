@@ -176,6 +176,14 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             WorldMapFrame.Resize:SetNormalTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up' );
             WorldMapFrame.Resize:SetHighlightTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight' );
             WorldMapFrame.Resize:SetPushedTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down' );
+
+            local BGTheme = Addon.Theme.Gold;
+            local r,g,b,a = BGTheme.r,BGTheme.g,BGTheme.b,1;
+
+            WorldMapFrame.Resize.Texture = WorldMapFrame.Resize:CreateTexture();
+            WorldMapFrame.Resize.Texture:SetAllPoints( WorldMapFrame.Resize );
+            WorldMapFrame.Resize.Texture:SetColorTexture( r,g,b,a );
+
             WorldMapFrame.Resize:SetScript( 'OnMouseDown',function( self,Button )
                 if( Button == 'LeftButton' ) then
                     Addon.MAP.Scaling = true;
@@ -338,13 +346,10 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             WorldMapUnitPin:SetPlayerPingScale( 3 );
 
             if( self:GetValue( 'MatchWorldScale' ) ) then
-                if( WorldMapFrame.ScrollContainer.Child:GetEffectiveScale() < .1 ) then
+                if( WorldMapUnitPin:GetEffectiveScale() <= .3 ) then
                     WorldMapUnitPin:SetPlayerPingScale( 2 * 5 );
                     WorldMapUnitPin:SetPinSize( 'player',192 );
-                    --WorldMapUnitPin:SetPinSize( 'party',256 );
-                    --WorldMapUnitPin:SetPinSize( 'raid',256 );
                 end
-                --WorldMapUnitPin:SynchronizePinSizes();
             end
 
             if( self:GetValue( 'SkullMyAss' ) ) then
