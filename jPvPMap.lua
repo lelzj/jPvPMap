@@ -163,11 +163,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 Addon.MAP.UpdateZone();
             end );
-            
-            -- Pin
-            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
-                self:UpdatePin();
-            end );
 
             -- Scale
             WorldMapFrame.Resize = CreateFrame( 'Button','resize',WorldMapFrame );
