@@ -163,6 +163,11 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 Addon.MAP.UpdateZone();
             end );
+            
+            -- Pin
+            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function() 
+                self:UpdatePin();
+            end );
 
             -- Scale
             WorldMapFrame.Resize = CreateFrame( 'Button','resize',WorldMapFrame );
@@ -219,6 +224,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Update
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnUpdate',function( Map )
+                if( InCombatLockdown() ) then
+                    return;
+                end
                 -- Scaling
                 if( self.Scaling == true ) then
                     WorldMapFrame:SetAlpha( 1 );
@@ -328,6 +336,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdatePin = function( self )
+            if( InCombatLockdown() ) then
+                return;
+            end
             if( not WorldMapFrame.ScrollContainer.Child ) then
                 return;
             end
@@ -368,6 +379,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdateZone = function( self )
+            if( InCombatLockdown() ) then
+                return;
+            end
             -- Verify
             if( not WorldMapFrame ) then
                 return;
