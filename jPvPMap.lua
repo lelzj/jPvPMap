@@ -25,6 +25,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 MatchWorldScale = true,
                 AlwaysShow = true,
                 PanelColapsed = true,
+                StopReading = true,
+                SitBehind = false,
             };
         end
 
@@ -122,6 +124,20 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         desc = 'Whether or not the retail version of the map should expand the quest list',
                         arg = 'PanelColapsed',
                     },
+                    StopReading = {
+                        order = 10,
+                        type = 'toggle',
+                        name = 'Stop Reading Emote',
+                        desc = 'If your character should /read while the map is open',
+                        arg = 'StopReading',
+                    },
+                    SitBehind = {
+                        order = 11,
+                        type = 'toggle',
+                        name = 'Sit Behind Windows',
+                        desc = 'If the map should sit behind other windows',
+                        arg = 'SitBehind',
+                    },
                 }
             };
             -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
@@ -215,31 +231,16 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self:Refresh();
             end );
 
-            -- Update
-            LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnUpdate',function( Map )
-                if( InCombatLockdown() ) then
+            -- MouseOver Map Frame
+            WorldMapFrame:HookScript( 'OnUpdate',function( self )
+                if( Addon.MAP.Scaling ) then
+                    self:SetAlpha( 1 );
                     return;
                 end
-                -- Scaling
-                if( self.Scaling == true ) then
-                    WorldMapFrame:SetAlpha( 1 );
-                    return;
-                end
-                -- Focus
-                if( not Map:IsMouseOver() ) then
-                    WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
-                -- Unfocus
+                if( not self:IsMouseOver() ) then
+                    self:SetAlpha( Addon.MAP:GetValue( 'MapAlpha' ) );
                 else
-                    WorldMapFrame:SetAlpha( 1 );
-                end
-
-                -- Zone change
-                local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
-                if( ( CurrentZone and self.PreviousZone ) and CurrentZone ~= self.PreviousZone ) then
-                    if( self:GetValue( 'ZoneUpdate' ) ) then
-                        self.PreviousZone = CurrentZone;
-                        Addon.MAP.UpdateZone();
-                    end
+                    self:SetAlpha( 1 );
                 end
             end );
         end
@@ -302,7 +303,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     } );
                     ]]
                     WorldMapFrame:ClearAllPoints();
-                    WorldMapFrame:SetPoint( Point,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos );
+                    WorldMapFrame:SetPoint( Point,MapXPos,MapYPos );
                     WorldMapFrame:SetScale( self:GetValue( 'MapScale' ) );
                 end
             end
@@ -411,11 +412,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Opacity
             WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
 
-            -- Sit behind
-            WorldMapFrame:SetFrameStrata( 'LOW' );
-            
-            --WorldMapFrame:EnableMouse( false );
-
             -- Passback
             local _,_,_,X,Y = WorldMapFrame:GetPoint();
             WorldMapFrame.x,WorldMapFrame.y = X,Y;
@@ -431,6 +427,16 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapFrame:IsShown() and self:GetValue( 'AlwaysShow' ) ) then
                 WorldMapFrame:Show();
             end
+
+            -- Sit behind
+            local DefaultStrata = WorldMapFrame:GetFrameStrata();
+            if( Addon.MAP:GetValue( 'SitBehind' ) and DefaultStrata ~= 'MEDIUM' ) then
+                WorldMapFrame:SetFrameStrata( 'MEDIUM' );
+            else
+                WorldMapFrame:SetFrameStrata( DefaultStrata );
+            end
+            
+            --WorldMapFrame:EnableMouse( false );
         end
 
         --
@@ -451,6 +457,21 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return;
             end
             --self.db:ResetDB();
+
+            -- Emotes
+            hooksecurefunc( 'DoEmote',function( Emote )
+                if( Emote == 'READ' and WorldMapFrame:IsShown() ) then
+                    if( Addon.MAP:GetValue( 'StopReading' ) ) then
+                        CancelEmote();
+                    end
+                end
+            end );
+
+            -- Slash command
+            SLASH_JMAP1, SLASH_JMAP2 = '/jm', '/jpm';
+            SlashCmdList['JMAP'] = function( Msg,EditBox )
+                Settings.OpenToCategory( 'jMap' );
+            end
         end
 
         --
