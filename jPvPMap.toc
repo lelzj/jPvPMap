@@ -10,7 +10,7 @@
 ## X-WoWI-ID: 26765
 ## X-Wago-ID: QNlqea6e
 
-## DefaultState: disabled
+## DefaultState: enabled
 ## SavedVariables: jPvPMap
 
 ## Interface: 110005

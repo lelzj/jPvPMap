@@ -177,13 +177,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             WorldMapFrame.Resize:SetHighlightTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight' );
             WorldMapFrame.Resize:SetPushedTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down' );
 
-            local BGTheme = Addon.Theme.Gold;
-            local r,g,b,a = BGTheme.r,BGTheme.g,BGTheme.b,1;
-
-            WorldMapFrame.Resize.Texture = WorldMapFrame.Resize:CreateTexture();
-            WorldMapFrame.Resize.Texture:SetAllPoints( WorldMapFrame.Resize );
-            WorldMapFrame.Resize.Texture:SetColorTexture( r,g,b,a );
-
             WorldMapFrame.Resize:SetScript( 'OnMouseDown',function( self,Button )
                 if( Button == 'LeftButton' ) then
                     Addon.MAP.Scaling = true;
