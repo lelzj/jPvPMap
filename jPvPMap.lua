@@ -20,9 +20,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 MapAlpha = 0.2,
 
                 PinAnimDuration = 90,
-                ZoneUpdate = true,
-                SkullMyAss = true,
+                SkullMyAss = 'Pink',
                 MatchWorldScale = true,
+                ClassColors = false,
                 AlwaysShow = true,
                 PanelColapsed = true,
                 StopReading = true,
@@ -58,7 +58,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return table
         Addon.MAP.GetSettings = function( self )
-            return {
+            local Settings = {
                 type = 'group',
                 get = function( Info )
                     if( self.persistence[ Info.arg ] ~= nil ) then
@@ -73,81 +73,131 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end,
                 type = 'group',
                 name = 'jMap Settings',
-                args = {
-                    MapAlpha = {
-                        order = 2,
-                        type = 'range',
-                        name = 'Map Alpha',
-                        desc = 'Map transparency/how well you can see behind the map while open',
-                        min = 0.1, max = 1, step = 0.1,
-                        arg = 'MapAlpha',
-                    },
-                    AlwaysShow = {
-                        order = 3,
-                        type = 'toggle',
-                        name = 'Always Show Map',
-                        desc = 'Whether or not the map should remain open at all times',
-                        arg = 'AlwaysShow',
-                    },
-                    SkullMyAss = {
-                        order = 5,
-                        type = 'toggle',
-                        name = 'Skull Your Pin',
-                        desc = 'Whether or not to display your position on the map as a skull',
-                        arg = 'SkullMyAss',
-                    },
-                    MatchWorldScale = {
-                        order = 6,
-                        type = 'toggle',
-                        name = 'Pin Scale to World Scale',
-                        desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
-                        arg = 'MatchWorldScale',
-                    },
-                    PinAnimDuration = {
-                        order = 7,
-                        type = 'range',
-                        name = 'Animation Duration',
-                        desc = 'Map player location animation duration',
-                        min = 10, max = 120, step = 10,
-                        arg = 'PinAnimDuration',
-                    },
-                    ZoneUpdate = {
-                        order = 8,
-                        type = 'toggle',
-                        name = 'Always Move to Zone',
-                        desc = 'Whether or not the map should update when you enter a new zone',
-                        arg = 'ZoneUpdate',
-                    },
-                    PanelColapsed = {
-                        order = 9,
-                        type = 'toggle',
-                        name = 'Quest Panel Closed',
-                        desc = 'Whether or not the retail version of the map should expand the quest list',
-                        arg = 'PanelColapsed',
-                    },
-                    StopReading = {
-                        order = 10,
-                        type = 'toggle',
-                        name = 'Stop Reading Emote',
-                        desc = 'If your character should /read while the map is open',
-                        arg = 'StopReading',
-                    },
-                    SitBehind = {
-                        order = 11,
-                        type = 'toggle',
-                        name = 'Sit Behind Windows',
-                        desc = 'If the map should sit behind other windows',
-                        arg = 'SitBehind',
-                    },
-                    UpdateZone = {
-                        order = 12,
-                        type = 'toggle',
-                        name = 'Auto Update Zone',
-                        desc = 'Attempt to transition map to new zone automatically. Retail has known issues with this, as it seems to cause some errors',
-                        arg = 'UpdateZone',
-                    },
-                }
+                args = {},
             };
+
+            local Order = 0;
+
+            -- General
+            Order = Order+1;
+            Settings.args[ 'Groups'..tostring( Order ) ] = {
+                type = 'header',
+                order = Order,
+                name = 'General',
+            };
+
+            Order = Order+1;
+            Settings.args.AlwaysShow = {
+                order = Order,
+                type = 'toggle',
+                name = 'Always Show Map',
+                desc = 'Whether or not the map should remain open at all times',
+                arg = 'AlwaysShow',
+            };
+
+            Order = Order+1;
+            Settings.args.MapAlpha = {
+                order = Order,
+                type = 'range',
+                name = 'Map Alpha',
+                desc = 'Map transparency/how well you can see behind the map while open',
+                min = 0.1, max = 1, step = 0.1,
+                arg = 'MapAlpha',
+            };
+
+            Order = Order+1;
+            Settings.args.SitBehind = {
+                order = Order,
+                type = 'toggle',
+                name = 'Sit Behind Windows',
+                desc = 'If the map should sit behind other windows',
+                arg = 'SitBehind',
+            };
+
+            Order = Order+1;
+            Settings.args.UpdateZone = {
+                order = Order,
+                type = 'toggle',
+                name = 'Auto Update Zone',
+                desc = 'Attempt to transition map to new zone automatically. Retail has known issues with this, as it seems to cause some errors',
+                arg = 'UpdateZone',
+            };
+
+            Order = Order+1;
+            Settings.args.PanelColapsed = {
+                order = Order,
+                type = 'toggle',
+                name = 'Quest Panel Closed',
+                desc = 'Whether or not the retail version of the map should expand the quest list',
+                arg = 'PanelColapsed',
+            };
+
+            Order = Order+1;
+            Settings.args.StopReading = {
+                order = Order,
+                type = 'toggle',
+                name = 'Stop Reading Emote',
+                desc = 'If your character should /read while the map is open',
+                arg = 'StopReading',
+            };
+
+
+
+            -- Pins
+            Order = Order+1;
+            Settings.args[ 'Groups'..tostring( Order ) ] = {
+                type = 'header',
+                order = Order,
+                name = 'Pins',
+            };
+
+            Order = Order+1;
+            Settings.args.SkullMyAss = {
+                order = Order,
+                type = 'select',
+                name = 'Pin',
+                desc = 'Your player icon on the map',
+                values = {
+                    Pink = 'Pink',
+                    Blue = 'Blue',
+                    Yellow = 'Yellow',
+                    Green = 'Green',
+                    Grey = 'Grey',
+                    Red = 'Red',
+                    Normal = 'Normal', 
+                },
+                arg = 'SkullMyAss',
+            };
+
+            Order = Order+1;
+            Settings.args.PinAnimDuration = {
+                order = Order,
+                type = 'range',
+                name = 'Animation Duration',
+                desc = 'Pin location animation duration',
+                min = 10, max = 120, step = 10,
+                arg = 'PinAnimDuration',
+            };
+
+            Order = Order+1;
+            Settings.args.ClassColors = {
+                order = Order,
+                type = 'toggle',
+                name = 'Class Colors',
+                desc = 'If group members should show on the map with their respective class colors',
+                arg = 'ClassColors',
+            };
+            
+            Order = Order+1;
+            Settings.args.MatchWorldScale = {
+                order = Order,
+                type = 'toggle',
+                name = 'Pin Scale',
+                desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
+                arg = 'MatchWorldScale',
+            };
+
+            return Settings;
             -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
         end;
 
@@ -371,17 +421,41 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
-            if( self:GetValue( 'SkullMyAss' ) ) then
+            if( self:GetValue( 'SkullMyAss' ) == 'Pink' ) then
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Purple' );
-                --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Grey' );
-                --WorldMapUnitPin:SetPinTexture( 'raid','Interface\\WorldMap\\Skull_64Red' );
-                --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Green' );
-                --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Blue' );
-            else
+            end
+            if( self:GetValue( 'SkullMyAss' ) == 'Blue' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Blue' );
+            end
+            if( self:GetValue( 'SkullMyAss' ) == 'Yellow' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\skull_64' );
+            end
+            if( self:GetValue( 'SkullMyAss' ) == 'Green' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Green' );
+            end
+            if( self:GetValue( 'SkullMyAss' ) == 'Grey' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\skull_64grey' );
+            end
+            if( self:GetValue( 'SkullMyAss' ) == 'Red' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Red' );
+            end
+            if( self:GetValue( 'SkullMyAss' ) == 'Normal' ) then
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\WorldMapArrow' );
             end
-            --WorldMapUnitPin:SetUseClassColor( 'party',true );
-            --WorldMapUnitPin:SetUseClassColor( 'raid',true );
+
+            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Grey' );
+            --WorldMapUnitPin:SetPinTexture( 'raid','Interface\\WorldMap\\Skull_64Red' );
+            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Green' );
+            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Blue' );
+
+            if( self:GetValue( 'ClassColors' ) ) then
+                WorldMapUnitPin:SetUseClassColor( 'party',true );
+                WorldMapUnitPin:SetUseClassColor( 'raid',true );
+            else
+                WorldMapUnitPin:SetUseClassColor( 'party',false );
+                WorldMapUnitPin:SetUseClassColor( 'raid',false );
+            end
+
             WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
 
             WorldMapUnitPin:StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
@@ -423,30 +497,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return;
             end
 
-            -- Position
-            WorldMapFrame:SetMovable( true );
-            WorldMapFrame:RegisterForDrag( 'LeftButton' );
-            WorldMapFrame:SetScript( 'OnDragStart',self.WorldMapFrameStartMoving );
-            WorldMapFrame:SetScript( 'OnDragStop',self.WorldMapFrameStopMoving );
-
-            -- Opacity
+            -- Map Opacity
             WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
-
-            -- Passback
-            local _,_,_,X,Y = WorldMapFrame:GetPoint();
-            WorldMapFrame.x,WorldMapFrame.y = X,Y;
-
-            -- Settings
-            self:SetPosition();
-            self:UpdatePin();
-
-            -- Ping map
-            self:GetUnitPin():StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
-
-            -- Show map
-            if( not WorldMapFrame:IsShown() and self:GetValue( 'AlwaysShow' ) ) then
-                WorldMapFrame:Show();
-            end
 
             -- Sit behind
             local DefaultStrata = WorldMapFrame:GetFrameStrata();
@@ -456,7 +508,22 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame:SetFrameStrata( DefaultStrata );
             end
             
+            -- Player icon
+            self:UpdatePin();
+            
+            -- Cvars
+            SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
+            SetCVar( 'mapFade',0 );
+            
+            -- I really love a cock in my ass
             --WorldMapFrame:EnableMouse( false );
+
+            -- Passback
+            local _,_,_,X,Y = WorldMapFrame:GetPoint();
+            WorldMapFrame.x,WorldMapFrame.y = X,Y;
+
+            -- Position
+            self:SetPosition();
         end
 
         --
@@ -477,6 +544,12 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return;
             end
             --self.db:ResetDB();
+
+            -- Position
+            WorldMapFrame:SetMovable( true );
+            WorldMapFrame:RegisterForDrag( 'LeftButton' );
+            WorldMapFrame:SetScript( 'OnDragStart',self.WorldMapFrameStartMoving );
+            WorldMapFrame:SetScript( 'OnDragStop',self.WorldMapFrameStopMoving );
 
             -- Emotes
             hooksecurefunc( 'DoEmote',function( Emote )
@@ -510,14 +583,28 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapFrame ) then
                 return;
             end
-            
-            -- Cvars
-            SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
-            SetCVar( 'mapFade',0 );
 
             -- Reaply
             C_Timer.After( 2, function()
                self:Refresh();
+
+                -- Ping map
+                self:GetUnitPin():StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
+
+                -- Show map
+                if( not WorldMapFrame:IsShown() and self:GetValue( 'AlwaysShow' ) ) then
+                    WorldMapFrame:Show();
+                end
+
+                -- Passback
+                local _,_,_,X,Y = WorldMapFrame:GetPoint();
+                WorldMapFrame.x,WorldMapFrame.y = X,Y;
+
+                -- Position
+                self:SetPosition();
+
+                -- Zone
+                Addon.MAP.UpdateZone();
             end );
         end
 
