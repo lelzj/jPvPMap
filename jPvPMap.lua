@@ -172,12 +172,21 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.Events:RegisterEvent( 'PLAYER_STARTED_MOVING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_LOOKING' );
             self.Events:RegisterEvent( 'PLAYER_STARTED_TURNING' );
+
+            self.Events:RegisterEvent( 'ZONE_CHANGED_NEW_AREA' );
+            self.Events:RegisterEvent( 'ZONE_CHANGED' );
+            self.Events:RegisterEvent( 'ZONE_CHANGED_INDOORS' );
             self.Events:SetScript( 'OnEvent',function( self,Event,... )
-                Addon.MAP:UpdatePin();
-                if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
-                    WorldMapFrame:Show();
+                if( Event == 'PLAYER_STARTED_MOVING' or Event == 'PLAYER_STARTED_LOOKING' or Event == 'PLAYER_STARTED_TURNING' ) then
+                    Addon.MAP:UpdatePin();
+                    if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
+                        WorldMapFrame:Show();
+                    end
                 end
-                Addon.MAP.UpdateZone();
+
+                if( Event == 'ZONE_CHANGED_NEW_AREA' or Event == 'ZONE_CHANGED' or Event == 'ZONE_CHANGED_INDOORS' ) then
+                    Addon.MAP.UpdateZone();
+                end
             end );
             
             -- Pin
@@ -290,7 +299,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.MAP.SetPosition = function( self )
             local MapPoint,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos;
             if( not WorldMapFrame:IsMaximized() ) then
-                Point,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos = self:GetValue( 'MapPoint' ),self:GetValue( 'MapRelativeTo' ),self:GetValue( 'MapRelativePoint' ),self:GetValue( 'MapXPos' ),self:GetValue( 'MapYPos' );
+                Point,MapXPos,MapYPos = self:GetValue( 'MapPoint' ),self:GetValue( 'MapXPos' ),self:GetValue( 'MapYPos' );
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
                     --[[
                     Addon:Dump( {
@@ -380,8 +389,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapFrame ) then
                 return;
             end
+            local NewPosition = WorldMapFrame.mapID;
             local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
-            if CurrentZone then
+            if( CurrentZone and CurrentZone > 0 and NewPosition and NewPosition > 0 ) then
                 WorldMapFrame:SetMapID( CurrentZone );
             end
         end
