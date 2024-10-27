@@ -27,6 +27,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 PanelColapsed = true,
                 StopReading = true,
                 SitBehind = false,
+                UpdateZone = true,
             };
         end
 
@@ -138,6 +139,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         desc = 'If the map should sit behind other windows',
                         arg = 'SitBehind',
                     },
+                    UpdateZone = {
+                        order = 12,
+                        type = 'toggle',
+                        name = 'Auto Update Zone',
+                        desc = 'Attempt to transition map to new zone automatically. Retail has known issues with this, as it seems to cause some errors',
+                        arg = 'UpdateZone',
+                    },
                 }
             };
             -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
@@ -185,7 +193,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
 
                 if( Event == 'ZONE_CHANGED_NEW_AREA' or Event == 'ZONE_CHANGED' or Event == 'ZONE_CHANGED_INDOORS' ) then
-                    Addon.MAP.UpdateZone();
+                    if( Addon.MAP:GetValue( 'UpdateZone' ) ) then
+                        Addon.MAP.UpdateZone();
+                    end
                 end
             end );
             
