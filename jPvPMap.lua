@@ -241,11 +241,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         WorldMapFrame:Show();
                     end
                 end
-
-                if( Event == 'ZONE_CHANGED_NEW_AREA' or Event == 'ZONE_CHANGED' or Event == 'ZONE_CHANGED_INDOORS' ) then
-                    if( Addon.MAP:GetValue( 'UpdateZone' ) ) then
-                        Addon.MAP.UpdateZone();
-                    end
+                if( Addon.MAP:GetValue( 'UpdateZone' ) ) then
+                    Addon.MAP:UpdateZone();
                 end
             end );
             
@@ -312,6 +309,21 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self:SetAlpha( 1 );
                 end
             end );
+
+            --[[
+            if( not WorldMapFrame.NavBar ) then
+                WorldMapFrame.Nav = CreateFrame( 'Frame',AddonName..'Nav',WorldMapFrame.ScrollContainer.Child );
+                WorldMapFrame.Nav:SetSize( WorldMapFrame.ScrollContainer.Child:GetWidth(),60 );
+                WorldMapFrame.Nav:SetPoint( 'topleft',WorldMapFrame.ScrollContainer.Child,'topleft',0,0 );
+
+                local BGTheme = Addon.Theme.Background;
+                local r,g,b,a = BGTheme.r,BGTheme.g,BGTheme.b,0.9;
+
+                WorldMapFrame.Nav.Texture = WorldMapFrame.Nav:CreateTexture();
+                WorldMapFrame.Nav.Texture:SetAllPoints( WorldMapFrame.Nav );
+                WorldMapFrame.Nav.Texture:SetColorTexture( r,g,b,a );
+            end
+            ]]
         end
 
         --
@@ -324,7 +336,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 local MapPoint,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos = WorldMapFrame:GetPoint();
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
                     Addon.MAP:SetValue( 'MapPoint',MapPoint );
-                    Addon.MAP:SetValue( 'MapRelativeTo',MapRelativeTo or 'UIParent' );
+                    Addon.MAP:SetValue( 'MapRelativeTo',MapRelativeTo );
                     Addon.MAP:SetValue( 'MapRelativePoint',MapRelativePoint );
                     Addon.MAP:SetValue( 'MapXPos',MapXPos );
                     Addon.MAP:SetValue( 'MapYPos',MapYPos );
@@ -340,6 +352,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     ]]
                 end
             end
+            WorldMapFrame:SetUserPlaced( true );
         end
 
         --
@@ -357,22 +370,23 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.SetPosition = function( self )
-            local MapPoint,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos;
             if( not WorldMapFrame:IsMaximized() ) then
-                Point,MapXPos,MapYPos = self:GetValue( 'MapPoint' ),self:GetValue( 'MapXPos' ),self:GetValue( 'MapYPos' );
+                local MapPoint,MapXPos,MapYPos = self:GetValue( 'MapPoint' ),self:GetValue( 'MapXPos' ),self:GetValue( 'MapYPos' );
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
+                    
                     --[[
                     Addon:Dump( {
                         Action = 'Loading',
-                        MapPoint = self:GetValue( 'MapPoint' ),
-                        MapRelativeTo = self:GetValue( 'MapRelativeTo' ), 
-                        MapRelativePoint = self:GetValue( 'MapRelativePoint' ), 
-                        MapXPos = self:GetValue( 'MapXPos' ), 
-                        MapYPos = self:GetValue( 'MapYPos' ), 
+                        MapPoint = MapPoint,
+                        MapRelativeTo = MapRelativeTo, 
+                        MapRelativePoint = MapRelativePoint, 
+                        MapXPos = MapXPos, 
+                        MapYPos = MapYPos, 
                     } );
                     ]]
+                    
                     WorldMapFrame:ClearAllPoints();
-                    WorldMapFrame:SetPoint( Point,MapXPos,MapYPos );
+                    WorldMapFrame:SetPoint( MapPoint,MapXPos,MapYPos );
                     WorldMapFrame:SetScale( self:GetValue( 'MapScale' ) );
                 end
             end
@@ -399,12 +413,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdatePin = function( self )
-            if( InCombatLockdown() ) then
-                return;
-            end
-            if( not WorldMapFrame.ScrollContainer.Child ) then
-                return;
-            end
             local WorldMapUnitPin = self:GetUnitPin();
             if( not WorldMapUnitPin ) then
                 return;
@@ -475,7 +483,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             local NewPosition = WorldMapFrame.mapID;
             local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
-            if( CurrentZone and CurrentZone > 0 and NewPosition and NewPosition > 0 ) then
+
+            if( CurrentZone ) then
                 WorldMapFrame:SetMapID( CurrentZone );
             end
         end
@@ -517,13 +526,6 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             
             -- I really love a cock in my ass
             --WorldMapFrame:EnableMouse( false );
-
-            -- Passback
-            local _,_,_,X,Y = WorldMapFrame:GetPoint();
-            WorldMapFrame.x,WorldMapFrame.y = X,Y;
-
-            -- Position
-            self:SetPosition();
         end
 
         --
@@ -596,15 +598,11 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     WorldMapFrame:Show();
                 end
 
-                -- Passback
-                local _,_,_,X,Y = WorldMapFrame:GetPoint();
-                WorldMapFrame.x,WorldMapFrame.y = X,Y;
-
                 -- Position
                 self:SetPosition();
 
                 -- Zone
-                Addon.MAP.UpdateZone();
+                self:UpdateZone();
             end );
         end
 
