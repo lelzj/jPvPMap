@@ -235,6 +235,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.Events:RegisterEvent( 'ZONE_CHANGED' );
             self.Events:RegisterEvent( 'ZONE_CHANGED_INDOORS' );
             self.Events:SetScript( 'OnEvent',function( self,Event,... )
+                if( InCombatLockdown() ) then
+                    return;
+                end
                 if( Event == 'PLAYER_STARTED_MOVING' or Event == 'PLAYER_STARTED_LOOKING' or Event == 'PLAYER_STARTED_TURNING' ) then
                     Addon.MAP:UpdatePin();
                     if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
@@ -282,6 +285,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
             WorldMapFrame.Resize:SetScript( 'OnMouseUp',function( self,Button )
+                Addon.MAP.Scaling = false;
                 if( Button == 'LeftButton' ) then
                     Addon.MAP.Scaling = false;
                     Addon.MAP:SetValue( 'MapScale',WorldMapFrame:GetScale() );
@@ -413,6 +417,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.MAP.UpdatePin = function( self )
+            if( InCombatLockdown() ) then
+                return;
+            end
             local WorldMapUnitPin = self:GetUnitPin();
             if( not WorldMapUnitPin ) then
                 return;
@@ -487,6 +494,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( CurrentZone ) then
                 WorldMapFrame:SetMapID( CurrentZone );
             end
+
+            --WorldMapFrame:ResetZoom();
         end
 
         --
