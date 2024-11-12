@@ -28,6 +28,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 StopReading = true,
                 SitBehind = false,
                 UpdateZone = true,
+                Debug = false,
             };
         end
 
@@ -139,6 +140,15 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Stop Reading Emote',
                 desc = 'If your character should /read while the map is open',
                 arg = 'StopReading',
+            };
+
+            Order = Order+1;
+            Settings.args.Debug = {
+                order = Order,
+                type = 'toggle',
+                name = 'Debug',
+                desc = 'Development debugging',
+                arg = 'Debug',
             };
 
 
@@ -254,6 +264,17 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self:UpdatePin();
             end );
 
+            -- Display
+            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapFrame,'SynchronizeDisplayState',function()
+                if( not( WorldMapFrame:IsMaximized() ) ) then
+                    self:SetPosition();
+                    self:UpdateZone();
+                end
+                if( self:GetValue( 'Debug' ) ) then
+                    Addon.FRAMES:Debug( 'WorldMapFrame','SynchronizeDisplayState' );
+                end
+            end );
+
             -- Scale
             WorldMapFrame.Resize = CreateFrame( 'Button','resize',WorldMapFrame );
             WorldMapFrame.Resize:SetSize( 32,32 );
@@ -298,7 +319,8 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( PreviousZone ) then
                     self.PreviousZone = PreviousZone;
                 end
-                self:Refresh();
+                self:SetPosition();
+                self:UpdateZone();
             end );
 
             -- MouseOver Map Frame
@@ -314,7 +336,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            --[[
+            
             if( not WorldMapFrame.NavBar ) then
                 WorldMapFrame.Nav = CreateFrame( 'Frame',AddonName..'Nav',WorldMapFrame.ScrollContainer.Child );
                 WorldMapFrame.Nav:SetSize( WorldMapFrame.ScrollContainer.Child:GetWidth(),60 );
@@ -327,7 +349,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame.Nav.Texture:SetAllPoints( WorldMapFrame.Nav );
                 WorldMapFrame.Nav.Texture:SetColorTexture( r,g,b,a );
             end
-            ]]
+            
         end
 
         --
@@ -336,7 +358,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.MAP.WorldMapFrameStopMoving = function( self )
             WorldMapFrame:StopMovingOrSizing();
-            if not WorldMapFrame:IsMaximized() then
+            if( not( WorldMapFrame:IsMaximized() ) ) then
                 local MapPoint,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos = WorldMapFrame:GetPoint();
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
                     Addon.MAP:SetValue( 'MapPoint',MapPoint );
@@ -344,16 +366,19 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.MAP:SetValue( 'MapRelativePoint',MapRelativePoint );
                     Addon.MAP:SetValue( 'MapXPos',MapXPos );
                     Addon.MAP:SetValue( 'MapYPos',MapYPos );
-                    --[[
-                    Addon:Dump( {
-                        Action = 'Saving',
-                        MapPoint = Addon.MAP:GetValue( 'MapPoint' ),
-                        MapRelativeTo = Addon.MAP:GetValue( 'MapRelativeTo' ), 
-                        MapRelativePoint = Addon.MAP:GetValue( 'MapRelativePoint' ), 
-                        MapXPos = Addon.MAP:GetValue( 'MapXPos' ), 
-                        MapYPos = Addon.MAP:GetValue( 'MapYPos' ), 
-                    } );
-                    ]]
+
+                    if( Addon.MAP:GetValue( 'Debug' ) ) then
+                        Addon:Dump( {
+                            Action = 'Saving',
+                            MapPoint = Addon.MAP:GetValue( 'MapPoint' ),
+                            MapRelativeTo = Addon.MAP:GetValue( 'MapRelativeTo' ), 
+                            MapRelativePoint = Addon.MAP:GetValue( 'MapRelativePoint' ), 
+                            MapXPos = Addon.MAP:GetValue( 'MapXPos' ), 
+                            MapYPos = Addon.MAP:GetValue( 'MapYPos' ), 
+                        } );
+
+                        Addon.FRAMES:Debug( 'Addon.MAP','WorldMapFrameStopMoving' );
+                    end
                 end
             end
             WorldMapFrame:SetUserPlaced( true );
@@ -374,20 +399,22 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.MAP.SetPosition = function( self )
-            if( not WorldMapFrame:IsMaximized() ) then
+            if( not( WorldMapFrame:IsMaximized() ) ) then
                 local MapPoint,MapXPos,MapYPos = self:GetValue( 'MapPoint' ),self:GetValue( 'MapXPos' ),self:GetValue( 'MapYPos' );
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
-                    
-                    --[[
-                    Addon:Dump( {
-                        Action = 'Loading',
-                        MapPoint = MapPoint,
-                        MapRelativeTo = MapRelativeTo, 
-                        MapRelativePoint = MapRelativePoint, 
-                        MapXPos = MapXPos, 
-                        MapYPos = MapYPos, 
-                    } );
-                    ]]
+
+                    if( Addon.MAP:GetValue( 'Debug' ) ) then
+                        Addon:Dump( {
+                            Action = 'Loading',
+                            MapPoint = MapPoint,
+                            MapRelativeTo = MapRelativeTo, 
+                            MapRelativePoint = MapRelativePoint, 
+                            MapXPos = MapXPos, 
+                            MapYPos = MapYPos, 
+                        } );
+
+                        Addon.FRAMES:Debug( 'Addon.MAP','SetPosition' );
+                    end
                     
                     WorldMapFrame:ClearAllPoints();
                     WorldMapFrame:SetPoint( MapPoint,MapXPos,MapYPos );
@@ -532,6 +559,9 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Cvars
             SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
             SetCVar( 'mapFade',0 );
+
+            -- Position
+            self:SetPosition();
             
             -- I really love a cock in my ass
             --WorldMapFrame:EnableMouse( false );
