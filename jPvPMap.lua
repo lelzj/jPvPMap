@@ -336,7 +336,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            
+            --[[
             if( not WorldMapFrame.NavBar ) then
                 WorldMapFrame.Nav = CreateFrame( 'Frame',AddonName..'Nav',WorldMapFrame.ScrollContainer.Child );
                 WorldMapFrame.Nav:SetSize( WorldMapFrame.ScrollContainer.Child:GetWidth(),60 );
@@ -349,7 +349,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame.Nav.Texture:SetAllPoints( WorldMapFrame.Nav );
                 WorldMapFrame.Nav.Texture:SetColorTexture( r,g,b,a );
             end
-            
+            ]]
         end
 
         --
