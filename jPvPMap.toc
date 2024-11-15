@@ -37,4 +37,4 @@ Libs\AceHook-3.0\AceHook-3.0.xml
 Libs\AceEvent-3.0\AceEvent-3.0.xml
 Libs\jUI\index.xml
 
-jPvPMap.lua
+Index.xml

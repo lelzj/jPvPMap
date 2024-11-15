@@ -1,15 +1,15 @@
 local _, Addon = ...;
 
-Addon.MAP = CreateFrame( 'Frame' );
-Addon.MAP:RegisterEvent( 'ADDON_LOADED' );
-Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
+Addon.APP = CreateFrame( 'Frame' );
+Addon.APP:RegisterEvent( 'ADDON_LOADED' );
+Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jPvPMap' ) then
 
         --
         --  Get module defaults
         --
         --  @return table
-        Addon.MAP.GetDefaults = function( self )
+        Addon.APP.GetDefaults = function( self )
             return {
                 MapPoint = 'TOPLEFT',
                 MapRelativeTo = 'UIParent',
@@ -38,184 +38,195 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  Index
         --  @param  mixed   Value
         --  @return void
-        Addon.MAP.SetValue = function( self,Index,Value )
-            if( self.persistence[ Index ] ~= nil ) then
-                self.persistence[ Index ] = Value;
-            end
+        Addon.APP.SetValue = function( self,Index,Value )
+            return Addon.DB:SetValue( Index,Value );
         end
 
         --
         --  Get value
         --
         --  @return mixed
-        Addon.MAP.GetValue = function( self,Index )
-            if( self.persistence[ Index ] ~= nil ) then
-                return self.persistence[ Index ];
-            end
+        Addon.APP.GetValue = function( self,Index )
+            return Addon.DB:GetValue( Index );
         end
 
         --
         --  Get module settings
         --
         --  @return table
-        Addon.MAP.GetSettings = function( self )
+        Addon.APP.GetSettings = function( self )
+
+            local GetGeneral = function()
+                local Order = 1;
+                local Settings = {
+                    General = {
+                        type = 'header',
+                        order = Order,
+                        name = 'General',
+                    },
+                };
+                Order = Order+1;
+                Settings.AlwaysShow = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Always Show Map',
+                    desc = 'Whether or not the map should remain open at all times',
+                    arg = 'AlwaysShow',
+                };
+                Order = Order+1;
+                Settings.MapAlpha = {
+                    order = Order,
+                    type = 'range',
+                    name = 'Map Alpha',
+                    desc = 'Map transparency/how well you can see behind the map while open',
+                    min = 0.1, max = 1, step = 0.1,
+                    arg = 'MapAlpha',
+                };
+                Order = Order+1;
+                Settings.SitBehind = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Sit Behind Windows',
+                    desc = 'If the map should sit behind other windows',
+                    arg = 'SitBehind',
+                };
+                Order = Order+1;
+                Settings.UpdateZone = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Auto Update Zone',
+                    desc = 'Attempt to transition map to new zone automatically. Retail has known issues with this, as it seems to cause some errors',
+                    arg = 'UpdateZone',
+                };
+                Order = Order+1;
+                Settings.PanelColapsed = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Quest Panel Closed',
+                    desc = 'Whether or not the retail version of the map should expand the quest list',
+                    arg = 'PanelColapsed',
+                };
+                Order = Order+1;
+                Settings.StopReading = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Stop Reading Emote',
+                    desc = 'If your character should /read while the map is open',
+                    arg = 'StopReading',
+                };
+                Order = Order+1;
+                Settings.Debug = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Debug',
+                    desc = 'Development debugging',
+                    arg = 'Debug',
+                };
+                return Settings;
+            end
+            local GetPins = function()
+                local Order = 1;
+                local Settings = {
+                    General = {
+                        type = 'header',
+                        order = Order,
+                        name = 'Pins',
+                    },
+                };
+                Order = Order+1;
+                Settings.SkullMyAss = {
+                    order = Order,
+                    type = 'select',
+                    name = 'Pin',
+                    desc = 'Your player icon on the map',
+                    values = {
+                        Pink = 'Pink',
+                        Blue = 'Blue',
+                        Yellow = 'Yellow',
+                        Green = 'Green',
+                        Grey = 'Grey',
+                        Red = 'Red',
+                        Normal = 'Normal', 
+                    },
+                    arg = 'SkullMyAss',
+                };
+                Order = Order+1;
+                Settings.PinAnimDuration = {
+                    order = Order,
+                    type = 'range',
+                    name = 'Animation Duration',
+                    desc = 'Pin location animation duration',
+                    min = 10, max = 120, step = 10,
+                    arg = 'PinAnimDuration',
+                };
+                Order = Order+1;
+                Settings.ClassColors = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Class Colors',
+                    desc = 'If group members should show on the map with their respective class colors',
+                    arg = 'ClassColors',
+                };
+                Order = Order+1;
+                Settings.MatchWorldScale = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Pin Scale',
+                    desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
+                    arg = 'MatchWorldScale',
+                };
+                -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
+                return Settings;
+            end
+
             local Settings = {
                 type = 'group',
                 get = function( Info )
-                    if( self.persistence[ Info.arg ] ~= nil ) then
-                        return self.persistence[ Info.arg ];
+                    if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                        return Addon.DB:GetPersistence()[ Info.arg ];
                     end
                 end,
                 set = function( Info,Value )
-                    if( self.persistence[ Info.arg ] ~= nil ) then
-                        self.persistence[ Info.arg ] = Value;
+                    if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                        Addon.DB:GetPersistence()[ Info.arg ] = Value;
                         self:Refresh();
                     end
                 end,
-                type = 'group',
                 name = 'jMap Settings',
+                childGroups = 'tab',
                 args = {},
             };
 
+            -- General
             local Order = 0;
+            Settings.args[ 'tab'..Order ] = {
+                type = 'group',
+                name = 'General',
+                width = 'full',
+                order = Order,
+                args = GetGeneral(),
+            };
 
             -- General
             Order = Order+1;
-            Settings.args[ 'Groups'..tostring( Order ) ] = {
-                type = 'header',
-                order = Order,
-                name = 'General',
-            };
-
-            Order = Order+1;
-            Settings.args.AlwaysShow = {
-                order = Order,
-                type = 'toggle',
-                name = 'Always Show Map',
-                desc = 'Whether or not the map should remain open at all times',
-                arg = 'AlwaysShow',
-            };
-
-            Order = Order+1;
-            Settings.args.MapAlpha = {
-                order = Order,
-                type = 'range',
-                name = 'Map Alpha',
-                desc = 'Map transparency/how well you can see behind the map while open',
-                min = 0.1, max = 1, step = 0.1,
-                arg = 'MapAlpha',
-            };
-
-            Order = Order+1;
-            Settings.args.SitBehind = {
-                order = Order,
-                type = 'toggle',
-                name = 'Sit Behind Windows',
-                desc = 'If the map should sit behind other windows',
-                arg = 'SitBehind',
-            };
-
-            Order = Order+1;
-            Settings.args.UpdateZone = {
-                order = Order,
-                type = 'toggle',
-                name = 'Auto Update Zone',
-                desc = 'Attempt to transition map to new zone automatically. Retail has known issues with this, as it seems to cause some errors',
-                arg = 'UpdateZone',
-            };
-
-            Order = Order+1;
-            Settings.args.PanelColapsed = {
-                order = Order,
-                type = 'toggle',
-                name = 'Quest Panel Closed',
-                desc = 'Whether or not the retail version of the map should expand the quest list',
-                arg = 'PanelColapsed',
-            };
-
-            Order = Order+1;
-            Settings.args.StopReading = {
-                order = Order,
-                type = 'toggle',
-                name = 'Stop Reading Emote',
-                desc = 'If your character should /read while the map is open',
-                arg = 'StopReading',
-            };
-
-            Order = Order+1;
-            Settings.args.Debug = {
-                order = Order,
-                type = 'toggle',
-                name = 'Debug',
-                desc = 'Development debugging',
-                arg = 'Debug',
-            };
-
-
-
-            -- Pins
-            Order = Order+1;
-            Settings.args[ 'Groups'..tostring( Order ) ] = {
-                type = 'header',
-                order = Order,
+            Settings.args[ 'tab'..Order ] = {
+                type = 'group',
                 name = 'Pins',
+                width = 'full',
+                order = Order,
+                args = GetPins(),
             };
 
-            Order = Order+1;
-            Settings.args.SkullMyAss = {
-                order = Order,
-                type = 'select',
-                name = 'Pin',
-                desc = 'Your player icon on the map',
-                values = {
-                    Pink = 'Pink',
-                    Blue = 'Blue',
-                    Yellow = 'Yellow',
-                    Green = 'Green',
-                    Grey = 'Grey',
-                    Red = 'Red',
-                    Normal = 'Normal', 
-                },
-                arg = 'SkullMyAss',
-            };
-
-            Order = Order+1;
-            Settings.args.PinAnimDuration = {
-                order = Order,
-                type = 'range',
-                name = 'Animation Duration',
-                desc = 'Pin location animation duration',
-                min = 10, max = 120, step = 10,
-                arg = 'PinAnimDuration',
-            };
-
-            Order = Order+1;
-            Settings.args.ClassColors = {
-                order = Order,
-                type = 'toggle',
-                name = 'Class Colors',
-                desc = 'If group members should show on the map with their respective class colors',
-                arg = 'ClassColors',
-            };
-            
-            Order = Order+1;
-            Settings.args.MatchWorldScale = {
-                order = Order,
-                type = 'toggle',
-                name = 'Pin Scale',
-                desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
-                arg = 'MatchWorldScale',
-            };
+            Settings.args.profiles = LibStub( 'AceDBOptions-3.0' ):GetOptionsTable( Addon.DB.db );
 
             return Settings;
-            -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
         end;
 
         --
         --  Create module config frames
         --
         --  @return void
-        Addon.MAP.CreateFrames = function( self )
+        Addon.APP.CreateFrames = function( self )
             -- Verify
             local WorldMapUnitPin = self:GetUnitPin();
             if( not WorldMapUnitPin ) then
@@ -249,13 +260,13 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     return;
                 end
                 if( Event == 'PLAYER_STARTED_MOVING' or Event == 'PLAYER_STARTED_LOOKING' or Event == 'PLAYER_STARTED_TURNING' ) then
-                    Addon.MAP:UpdatePin();
-                    if( not WorldMapFrame:IsShown() and Addon.MAP:GetValue( 'AlwaysShow' ) ) then
+                    Addon.APP:UpdatePin();
+                    if( not WorldMapFrame:IsShown() and Addon.APP:GetValue( 'AlwaysShow' ) ) then
                         WorldMapFrame:Show();
                     end
                 end
-                if( Addon.MAP:GetValue( 'UpdateZone' ) ) then
-                    Addon.MAP:UpdateZone();
+                if( Addon.APP:GetValue( 'UpdateZone' ) ) then
+                    Addon.APP:UpdateZone();
                 end
             end );
             
@@ -285,11 +296,11 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             WorldMapFrame.Resize:SetScript( 'OnMouseDown',function( self,Button )
                 if( Button == 'LeftButton' ) then
-                    Addon.MAP.Scaling = true;
+                    Addon.APP.Scaling = true;
                 end
             end );
             WorldMapFrame.Resize:SetScript( 'OnUpdate',function( self,Button )
-                if( Addon.MAP.Scaling == true ) then
+                if( Addon.APP.Scaling == true ) then
 
                     local p,rt,rp,x,y = WorldMapFrame:GetPoint();
 
@@ -306,10 +317,10 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
             WorldMapFrame.Resize:SetScript( 'OnMouseUp',function( self,Button )
-                Addon.MAP.Scaling = false;
+                Addon.APP.Scaling = false;
                 if( Button == 'LeftButton' ) then
-                    Addon.MAP.Scaling = false;
-                    Addon.MAP:SetValue( 'MapScale',WorldMapFrame:GetScale() );
+                    Addon.APP.Scaling = false;
+                    Addon.APP:SetValue( 'MapScale',WorldMapFrame:GetScale() );
                 end
             end );
 
@@ -325,12 +336,12 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- MouseOver Map Frame
             WorldMapFrame:HookScript( 'OnUpdate',function( self )
-                if( Addon.MAP.Scaling ) then
+                if( Addon.APP.Scaling ) then
                     self:SetAlpha( 1 );
                     return;
                 end
                 if( not self:IsMouseOver() ) then
-                    self:SetAlpha( Addon.MAP:GetValue( 'MapAlpha' ) );
+                    self:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
                 else
                     self:SetAlpha( 1 );
                 end
@@ -356,28 +367,28 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Map stop moving
         --
         --  @return void
-        Addon.MAP.WorldMapFrameStopMoving = function( self )
+        Addon.APP.WorldMapFrameStopMoving = function( self )
             WorldMapFrame:StopMovingOrSizing();
             if( not( WorldMapFrame:IsMaximized() ) ) then
                 local MapPoint,MapRelativeTo,MapRelativePoint,MapXPos,MapYPos = WorldMapFrame:GetPoint();
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
-                    Addon.MAP:SetValue( 'MapPoint',MapPoint );
-                    Addon.MAP:SetValue( 'MapRelativeTo',MapRelativeTo );
-                    Addon.MAP:SetValue( 'MapRelativePoint',MapRelativePoint );
-                    Addon.MAP:SetValue( 'MapXPos',MapXPos );
-                    Addon.MAP:SetValue( 'MapYPos',MapYPos );
+                    Addon.APP:SetValue( 'MapPoint',MapPoint );
+                    Addon.APP:SetValue( 'MapRelativeTo',MapRelativeTo );
+                    Addon.APP:SetValue( 'MapRelativePoint',MapRelativePoint );
+                    Addon.APP:SetValue( 'MapXPos',MapXPos );
+                    Addon.APP:SetValue( 'MapYPos',MapYPos );
 
-                    if( Addon.MAP:GetValue( 'Debug' ) ) then
+                    if( Addon.APP:GetValue( 'Debug' ) ) then
                         Addon:Dump( {
                             Action = 'Saving',
-                            MapPoint = Addon.MAP:GetValue( 'MapPoint' ),
-                            MapRelativeTo = Addon.MAP:GetValue( 'MapRelativeTo' ), 
-                            MapRelativePoint = Addon.MAP:GetValue( 'MapRelativePoint' ), 
-                            MapXPos = Addon.MAP:GetValue( 'MapXPos' ), 
-                            MapYPos = Addon.MAP:GetValue( 'MapYPos' ), 
+                            MapPoint = Addon.APP:GetValue( 'MapPoint' ),
+                            MapRelativeTo = Addon.APP:GetValue( 'MapRelativeTo' ), 
+                            MapRelativePoint = Addon.APP:GetValue( 'MapRelativePoint' ), 
+                            MapXPos = Addon.APP:GetValue( 'MapXPos' ), 
+                            MapYPos = Addon.APP:GetValue( 'MapYPos' ), 
                         } );
 
-                        Addon.FRAMES:Debug( 'Addon.MAP','WorldMapFrameStopMoving' );
+                        Addon.FRAMES:Debug( 'Addon.APP','WorldMapFrameStopMoving' );
                     end
                 end
             end
@@ -388,7 +399,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Map start moving
         --
         --  @return void
-        Addon.MAP.WorldMapFrameStartMoving = function( self )
+        Addon.APP.WorldMapFrameStartMoving = function( self )
             if not WorldMapFrame:IsMaximized() then
                 WorldMapFrame:StartMoving()
             end
@@ -398,12 +409,12 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Map save position
         --
         --  @return void
-        Addon.MAP.SetPosition = function( self )
+        Addon.APP.SetPosition = function( self )
             if( not( WorldMapFrame:IsMaximized() ) ) then
                 local MapPoint,MapXPos,MapYPos = self:GetValue( 'MapPoint' ),self:GetValue( 'MapXPos' ),self:GetValue( 'MapYPos' );
                 if( MapXPos ~= nil and MapYPos ~= nil ) then
 
-                    if( Addon.MAP:GetValue( 'Debug' ) ) then
+                    if( Addon.APP:GetValue( 'Debug' ) ) then
                         Addon:Dump( {
                             Action = 'Loading',
                             MapPoint = MapPoint,
@@ -413,7 +424,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
                             MapYPos = MapYPos, 
                         } );
 
-                        Addon.FRAMES:Debug( 'Addon.MAP','SetPosition' );
+                        Addon.FRAMES:Debug( 'Addon.APP','SetPosition' );
                     end
                     
                     WorldMapFrame:ClearAllPoints();
@@ -427,7 +438,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- Map Unit Pin
         --
         -- @return  mixed
-        Addon.MAP.GetUnitPin = function( self )
+        Addon.APP.GetUnitPin = function( self )
             local WorldMapUnitPin;
             for pin in WorldMapFrame:EnumeratePinsByTemplate( 'GroupMembersPinTemplate' ) do
                 WorldMapUnitPin = pin
@@ -443,7 +454,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- Map Unit Update
         --
         -- @return  void
-        Addon.MAP.UpdatePin = function( self )
+        Addon.APP.UpdatePin = function( self )
             if( InCombatLockdown() ) then
                 return;
             end
@@ -507,7 +518,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- Map Zone Update
         --
         -- @return  void
-        Addon.MAP.UpdateZone = function( self )
+        Addon.APP.UpdateZone = function( self )
             if( InCombatLockdown() ) then
                 return;
             end
@@ -529,15 +540,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Module refresh
         --
         --  @return void
-        Addon.MAP.Refresh = function( self )
-            -- Verify
-            if( not self.db ) then
-                return;
-            end
-            self.persistence = self.db.profile;
-            if( not self.persistence ) then
-                return;
-            end
+        Addon.APP.Refresh = function( self )
             if( not WorldMapFrame ) then
                 return;
             end
@@ -547,7 +550,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Sit behind
             local DefaultStrata = WorldMapFrame:GetFrameStrata();
-            if( Addon.MAP:GetValue( 'SitBehind' ) and DefaultStrata ~= 'MEDIUM' ) then
+            if( Addon.APP:GetValue( 'SitBehind' ) and DefaultStrata ~= 'MEDIUM' ) then
                 WorldMapFrame:SetFrameStrata( 'MEDIUM' );
             else
                 WorldMapFrame:SetFrameStrata( DefaultStrata );
@@ -571,20 +574,10 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Module init
         --
         --  @return void
-        Addon.MAP.Init = function( self )
-            -- Verify
-            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ profile = self:GetDefaults() },true );
-            if( not self.db ) then
-                return;
-            end
-            self.persistence = self.db.profile;
-            if( not self.persistence ) then
-                return;
-            end
+        Addon.APP.Init = function( self )
             if( not WorldMapFrame ) then
                 return;
             end
-            --self.db:ResetDB();
 
             -- Position
             WorldMapFrame:SetMovable( true );
@@ -595,7 +588,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Emotes
             hooksecurefunc( 'DoEmote',function( Emote )
                 if( Emote == 'READ' and WorldMapFrame:IsShown() ) then
-                    if( Addon.MAP:GetValue( 'StopReading' ) ) then
+                    if( Addon.APP:GetValue( 'StopReading' ) ) then
                         CancelEmote();
                     end
                 end
@@ -612,15 +605,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Module run
         --
         --  @return void
-        Addon.MAP.Run = function( self )
-            -- Verify
-            if( not self.db ) then
-                return;
-            end
-            self.persistence = self.db.profile;
-            if( not self.persistence ) then
-                return;
-            end
+        Addon.APP.Run = function( self )
             if( not WorldMapFrame ) then
                 return;
             end
@@ -645,6 +630,7 @@ Addon.MAP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
         end
 
+        Addon.DB:Init();
         self:Init();
         self:CreateFrames();
         self:Run();
