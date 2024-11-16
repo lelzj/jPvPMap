@@ -115,21 +115,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            local VarData = {
-                Name = 'MapScale',
-                Step = .1,
-                KeyPairs = {
-                    Low = {
-                        Value = .5,
-                        Description = 'Low',
-                    },
-                    High = {
-                        Value = 2,
-                        Description = 'High',
-                    },
-                },
-            };
-
             local Values = {
                 .1,
                 .2,
@@ -152,36 +137,34 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 1.9,
                 2,
             };
-
-            local Key = VarData.Name;
-            local RangeSlider = CreateFrame( 'Slider',Key..'Range',WorldMapFrame,'OptionsSliderTemplate' );
-            RangeSlider:Hide();
-
-            RangeSlider:SetMinMaxValues( VarData.KeyPairs.Low.Value,VarData.KeyPairs.High.Value );
-            RangeSlider:SetValueStep( VarData.Step );
-
-            RangeSlider.minValue,RangeSlider.maxValue = RangeSlider:GetMinMaxValues();
-
-            RangeSlider.Low:SetText( VarData.KeyPairs.Low.Value );
-            RangeSlider.High:SetText( VarData.KeyPairs.High.Value );
-
-            local Point,RelativeFrame,RelativePoint,X,Y = RangeSlider.Low:GetPoint();
-            RangeSlider.Low:SetPoint( Point,RelativeFrame,RelativePoint,X+5,Y-5 );
-
-            local Point,RelativeFrame,RelativePoint,X,Y = RangeSlider.High:GetPoint();
-            RangeSlider.High:SetPoint( Point,RelativeFrame,RelativePoint,X-5,Y-5 );
-
-            local TreatAsMouseEvent = true;
-            local Value = Addon.APP:GetValue( Key );
-            
-            RangeSlider:SetValue( Addon.APP:GetValue( Key ),TreatAsMouseEvent );
-            RangeSlider.keyValue = Key;
-            RangeSlider.EditBox = CreateFrame( 'EditBox',Key..'SliderEditBox',Frame,'InputBoxTemplate' --[[and BackdropTemplate]] );
+            local SliderData = {
+                Name = 'MapScale',
+                Step = .1,
+                KeyPairs = {
+                    Low = {
+                        Value = .5,
+                        Description = 'Low',
+                    },
+                    High = {
+                        Value = 2,
+                        Description = 'High',
+                    },
+                },
+            };
+            local RangeSlider = Addon.FRAMES:AddRange( SliderData,WorldMapFrame,{
+                Get = function( Index )
+                    return self:GetValue( 'MapScale' );
+                end,
+                Set = function( Index,Value )
+                    print( 'Set',Index,Value)
+                    --return self:SetValue( 'MapScale',Value );
+                end,
+            } );
             WorldMapFrame.ScrollContainer:HookScript( 'OnMouseWheel',function( self,Value )
                 if( not Addon.APP:GetValue( 'ScrollScale' ) ) then
                     return;
                 end
-                local CurrentValue = Addon.APP:GetValue( VarData.Name );
+                local CurrentValue = Addon.APP:GetValue( SliderData.Name );
                 local Direction;
                 if Value > 0 then
                     Direction = 'up';
@@ -194,14 +177,14 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 local NewValue;
 
                 if Direction == 'up' then
-                    MaxValue = VarData.KeyPairs.High.Value;
-                    NewValue = CurrentValue + VarData.Step;
+                    MaxValue = SliderData.KeyPairs.High.Value;
+                    NewValue = CurrentValue + SliderData.Step;
                     if NewValue > MaxValue then
                         return;
                     end
                 elseif Direction == 'down' then
-                    MinValue = VarData.KeyPairs.Low.Value;
-                    NewValue = CurrentValue - VarData.Step;
+                    MinValue = SliderData.KeyPairs.Low.Value;
+                    NewValue = CurrentValue - SliderData.Step;
                     if NewValue < MinValue then
                         return;
                     end
@@ -209,15 +192,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
                 if( NewValue ~= nil ) then
                     RangeSlider.EditBox:SetText( NewValue );
-                    Addon.APP:SetValue( VarData.Name,NewValue );
+                    Addon.APP:SetValue( SliderData.Name,NewValue );
                     Addon.APP:SetScale();
                 end
             end );
-            RangeSlider.EditBox:Disable();
-            RangeSlider:SetHeight( 15 );
-
-            RangeSlider:SetPoint( 'topleft',WorldMapFrame,'topright' );
-            RangeSlider:SetOrientation( 'VERTICAL' );
         end
 
         --
