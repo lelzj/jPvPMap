@@ -6,33 +6,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jPvPMap' ) then
 
         --
-        --  Get module defaults
-        --
-        --  @return table
-        Addon.APP.GetDefaults = function( self )
-            return {
-                MapPoint = 'TOPLEFT',
-                MapRelativeTo = 'UIParent',
-                MapRelativePoint = nil,
-                MapXPos = 15.480,
-                MapYPos = -48.181,
-                MapScale = 0.866,
-                MapAlpha = 0.2,
-
-                PinAnimDuration = 90,
-                SkullMyAss = 'Pink',
-                MatchWorldScale = true,
-                ClassColors = false,
-                AlwaysShow = true,
-                PanelColapsed = true,
-                StopReading = true,
-                SitBehind = false,
-                UpdateZone = true,
-                Debug = false,
-            };
-        end
-
-        --
         --  Set value
         --
         --  @param  string  Index
@@ -51,178 +24,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Get module settings
-        --
-        --  @return table
-        Addon.APP.GetSettings = function( self )
-
-            local GetGeneral = function()
-                local Order = 1;
-                local Settings = {
-                    General = {
-                        type = 'header',
-                        order = Order,
-                        name = 'General',
-                    },
-                };
-                Order = Order+1;
-                Settings.AlwaysShow = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Always Show Map',
-                    desc = 'Whether or not the map should remain open at all times',
-                    arg = 'AlwaysShow',
-                };
-                Order = Order+1;
-                Settings.MapAlpha = {
-                    order = Order,
-                    type = 'range',
-                    name = 'Map Alpha',
-                    desc = 'Map transparency/how well you can see behind the map while open',
-                    min = 0.1, max = 1, step = 0.1,
-                    arg = 'MapAlpha',
-                };
-                Order = Order+1;
-                Settings.SitBehind = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Sit Behind Windows',
-                    desc = 'If the map should sit behind other windows',
-                    arg = 'SitBehind',
-                };
-                Order = Order+1;
-                Settings.UpdateZone = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Auto Update Zone',
-                    desc = 'Attempt to transition map to new zone automatically. Retail has known issues with this, as it seems to cause some errors',
-                    arg = 'UpdateZone',
-                };
-                Order = Order+1;
-                Settings.PanelColapsed = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Quest Panel Closed',
-                    desc = 'Whether or not the retail version of the map should expand the quest list',
-                    arg = 'PanelColapsed',
-                };
-                Order = Order+1;
-                Settings.StopReading = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Stop Reading Emote',
-                    desc = 'If your character should /read while the map is open',
-                    arg = 'StopReading',
-                };
-                Order = Order+1;
-                Settings.Debug = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Debug',
-                    desc = 'Development debugging',
-                    arg = 'Debug',
-                };
-                return Settings;
-            end
-            local GetPins = function()
-                local Order = 1;
-                local Settings = {
-                    General = {
-                        type = 'header',
-                        order = Order,
-                        name = 'Pins',
-                    },
-                };
-                Order = Order+1;
-                Settings.SkullMyAss = {
-                    order = Order,
-                    type = 'select',
-                    name = 'Pin',
-                    desc = 'Your player icon on the map',
-                    values = {
-                        Pink = 'Pink',
-                        Blue = 'Blue',
-                        Yellow = 'Yellow',
-                        Green = 'Green',
-                        Grey = 'Grey',
-                        Red = 'Red',
-                        Normal = 'Normal', 
-                    },
-                    arg = 'SkullMyAss',
-                };
-                Order = Order+1;
-                Settings.PinAnimDuration = {
-                    order = Order,
-                    type = 'range',
-                    name = 'Animation Duration',
-                    desc = 'Pin location animation duration',
-                    min = 10, max = 120, step = 10,
-                    arg = 'PinAnimDuration',
-                };
-                Order = Order+1;
-                Settings.ClassColors = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Class Colors',
-                    desc = 'If group members should show on the map with their respective class colors',
-                    arg = 'ClassColors',
-                };
-                Order = Order+1;
-                Settings.MatchWorldScale = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Pin Scale',
-                    desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
-                    arg = 'MatchWorldScale',
-                };
-                -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
-                return Settings;
-            end
-
-            local Settings = {
-                type = 'group',
-                get = function( Info )
-                    if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
-                        return Addon.DB:GetPersistence()[ Info.arg ];
-                    end
-                end,
-                set = function( Info,Value )
-                    if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
-                        Addon.DB:GetPersistence()[ Info.arg ] = Value;
-                        self:Refresh();
-                    end
-                end,
-                name = 'jMap Settings',
-                childGroups = 'tab',
-                args = {},
-            };
-
-            -- General
-            local Order = 0;
-            Settings.args[ 'tab'..Order ] = {
-                type = 'group',
-                name = 'General',
-                width = 'full',
-                order = Order,
-                args = GetGeneral(),
-            };
-
-            -- General
-            Order = Order+1;
-            Settings.args[ 'tab'..Order ] = {
-                type = 'group',
-                name = 'Pins',
-                width = 'full',
-                order = Order,
-                args = GetPins(),
-            };
-
-            Settings.args.profiles = LibStub( 'AceDBOptions-3.0' ):GetOptionsTable( Addon.DB.db );
-
-            return Settings;
-        end;
-
-        --
         --  Create module config frames
         --
         --  @return void
@@ -232,17 +33,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapUnitPin ) then
                 return;
             end
-
-            -- Register
-            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( 'jMap','jMap' );
-            self.Config.okay = function( self )
-                self:Refresh();
-                RestartGx();
-            end
-            self.Config.default = function( self )
-                self.db:ResetDB();
-            end
-            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( 'jMap',self:GetSettings() );
 
             -- Events
             self.Events = CreateFrame( 'Frame' );
@@ -260,6 +50,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     return;
                 end
                 if( Event == 'PLAYER_STARTED_MOVING' or Event == 'PLAYER_STARTED_LOOKING' or Event == 'PLAYER_STARTED_TURNING' ) then
+                    WorldMapFrame:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
                     Addon.APP:UpdatePin();
                     if( not WorldMapFrame:IsShown() and Addon.APP:GetValue( 'AlwaysShow' ) ) then
                         WorldMapFrame:Show();
@@ -286,44 +77,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            -- Scale
-            WorldMapFrame.Resize = CreateFrame( 'Button','resize',WorldMapFrame );
-            WorldMapFrame.Resize:SetSize( 32,32 );
-            WorldMapFrame.Resize:SetPoint( 'bottomright',15,-15 );
-            WorldMapFrame.Resize:SetNormalTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Up' );
-            WorldMapFrame.Resize:SetHighlightTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Highlight' );
-            WorldMapFrame.Resize:SetPushedTexture( 'Interface\\ChatFrame\\UI-ChatIM-SizeGrabber-Down' );
-
-            WorldMapFrame.Resize:SetScript( 'OnMouseDown',function( self,Button )
-                if( Button == 'LeftButton' ) then
-                    Addon.APP.Scaling = true;
-                end
-            end );
-            WorldMapFrame.Resize:SetScript( 'OnUpdate',function( self,Button )
-                if( Addon.APP.Scaling == true ) then
-
-                    local p,rt,rp,x,y = WorldMapFrame:GetPoint();
-
-                    local cx, cy = GetCursorPosition();
-                    cx = cx / self:GetEffectiveScale() - self:GetParent():GetLeft();
-                    cy = self:GetParent( ):GetHeight() - ( cy / self:GetEffectiveScale() - self:GetParent():GetBottom() );
-
-                    local s = cx / self:GetParent():GetWidth();
-
-                    self:GetParent():ClearAllPoints();
-                    self:GetParent():SetScale( self:GetParent():GetScale() * s );
-                    self:GetParent():SetPoint( p,rt,rp,x,y );
-                    self:GetParent().x,self:GetParent().y = x,y;
-                end
-            end );
-            WorldMapFrame.Resize:SetScript( 'OnMouseUp',function( self,Button )
-                Addon.APP.Scaling = false;
-                if( Button == 'LeftButton' ) then
-                    Addon.APP.Scaling = false;
-                    Addon.APP:SetValue( 'MapScale',WorldMapFrame:GetScale() );
-                end
-            end );
-
             -- Show
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map )
                 local PreviousZone = C_Map.GetBestMapForUnit( 'player' );
@@ -332,19 +85,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 self:SetPosition();
                 self:UpdateZone();
-            end );
-
-            -- MouseOver Map Frame
-            WorldMapFrame:HookScript( 'OnUpdate',function( self )
-                if( Addon.APP.Scaling ) then
-                    self:SetAlpha( 1 );
-                    return;
-                end
-                if( not self:IsMouseOver() ) then
-                    self:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
-                else
-                    self:SetAlpha( 1 );
-                end
             end );
 
             --[[
@@ -361,6 +101,123 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame.Nav.Texture:SetColorTexture( r,g,b,a );
             end
             ]]
+
+            -- Fading
+            -- /Blizzard_FrameXMLBase/PlayerMovementFrameFader.lua
+            PlayerMovementFrameFader.RemoveFrame( WorldMapFrame );
+
+            local FrameFaderDriver = CreateFrame( 'Frame',nil,WorldMapFrame );
+            FrameFaderDriver:SetScript( 'OnUpdate',function( self,Elapsed )
+                if( not WorldMapFrame:IsMouseOver() ) then
+                    WorldMapFrame:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
+                else
+                    WorldMapFrame:SetAlpha( 1 );
+                end
+            end );
+
+            local VarData = {
+                Name = 'MapScale',
+                Step = .1,
+                KeyPairs = {
+                    Low = {
+                        Value = .5,
+                        Description = 'Low',
+                    },
+                    High = {
+                        Value = 2,
+                        Description = 'High',
+                    },
+                },
+            };
+
+            local Values = {
+                .1,
+                .2,
+                .3,
+                .4,
+                .5,
+                .6,
+                .7,
+                .8,
+                .9,
+                1,
+                1.1,
+                1.2,
+                1.3,
+                1.4,
+                1.5,
+                1.6,
+                1.7,
+                1.8,
+                1.9,
+                2,
+            };
+
+            local Key = VarData.Name;
+            local RangeSlider = CreateFrame( 'Slider',Key..'Range',WorldMapFrame,'OptionsSliderTemplate' );
+            RangeSlider:Hide();
+
+            RangeSlider:SetMinMaxValues( VarData.KeyPairs.Low.Value,VarData.KeyPairs.High.Value );
+            RangeSlider:SetValueStep( VarData.Step );
+
+            RangeSlider.minValue,RangeSlider.maxValue = RangeSlider:GetMinMaxValues();
+
+            RangeSlider.Low:SetText( VarData.KeyPairs.Low.Value );
+            RangeSlider.High:SetText( VarData.KeyPairs.High.Value );
+
+            local Point,RelativeFrame,RelativePoint,X,Y = RangeSlider.Low:GetPoint();
+            RangeSlider.Low:SetPoint( Point,RelativeFrame,RelativePoint,X+5,Y-5 );
+
+            local Point,RelativeFrame,RelativePoint,X,Y = RangeSlider.High:GetPoint();
+            RangeSlider.High:SetPoint( Point,RelativeFrame,RelativePoint,X-5,Y-5 );
+
+            local TreatAsMouseEvent = true;
+            local Value = Addon.APP:GetValue( Key );
+            
+            RangeSlider:SetValue( Addon.APP:GetValue( Key ),TreatAsMouseEvent );
+            RangeSlider.keyValue = Key;
+            RangeSlider.EditBox = CreateFrame( 'EditBox',Key..'SliderEditBox',Frame,'InputBoxTemplate' --[[and BackdropTemplate]] );
+            WorldMapFrame.ScrollContainer:HookScript( 'OnMouseWheel',function( self,Value )
+                if( not Addon.APP:GetValue( 'ScrollScale' ) ) then
+                    return;
+                end
+                local CurrentValue = Addon.APP:GetValue( VarData.Name );
+                local Direction;
+                if Value > 0 then
+                    Direction = 'up';
+                else
+                    Direction = 'down';
+                end
+
+                local MaxValue;
+                local MinValue;
+                local NewValue;
+
+                if Direction == 'up' then
+                    MaxValue = VarData.KeyPairs.High.Value;
+                    NewValue = CurrentValue + VarData.Step;
+                    if NewValue > MaxValue then
+                        return;
+                    end
+                elseif Direction == 'down' then
+                    MinValue = VarData.KeyPairs.Low.Value;
+                    NewValue = CurrentValue - VarData.Step;
+                    if NewValue < MinValue then
+                        return;
+                    end
+                end
+
+                if( NewValue ~= nil ) then
+                    RangeSlider.EditBox:SetText( NewValue );
+                    Addon.APP:SetValue( VarData.Name,NewValue );
+                    Addon.APP:SetScale();
+                end
+            end );
+            RangeSlider.EditBox:Disable();
+            RangeSlider:SetHeight( 15 );
+
+            RangeSlider:SetPoint( 'topleft',WorldMapFrame,'topright' );
+            RangeSlider:SetOrientation( 'VERTICAL' );
         end
 
         --
@@ -432,6 +289,19 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     WorldMapFrame:SetScale( self:GetValue( 'MapScale' ) );
                 end
             end
+        end
+
+        Addon.APP.SetCVars = function( self )
+            SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
+            SetCVar( 'mapFade',0 );
+        end
+
+        --
+        --  Map save scale
+        --
+        --  @return void
+        Addon.APP.SetScale = function( self )
+            WorldMapFrame:SetScale( self:GetValue( 'MapScale' ) );
         end
 
         --
@@ -548,6 +418,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Map Opacity
             WorldMapFrame:SetAlpha( self:GetValue( 'MapAlpha' ) );
 
+            -- Map Scale
+            self:SetScale();
+
             -- Sit behind
             local DefaultStrata = WorldMapFrame:GetFrameStrata();
             if( Addon.APP:GetValue( 'SitBehind' ) and DefaultStrata ~= 'MEDIUM' ) then
@@ -559,15 +432,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Player icon
             self:UpdatePin();
             
-            -- Cvars
-            SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
-            SetCVar( 'mapFade',0 );
-
-            -- Position
-            self:SetPosition();
-            
-            -- I really love a cock in my ass
-            --WorldMapFrame:EnableMouse( false );
+            -- Player position
+            self:UpdateZone();
         end
 
         --
@@ -627,10 +493,15 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
                 -- Zone
                 self:UpdateZone();
+
+                -- CVars
+                self:SetCVars();
             end );
         end
 
         Addon.DB:Init();
+        Addon.CONFIG:Init( self );
+
         self:Init();
         self:CreateFrames();
         self:Run();

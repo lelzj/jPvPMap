@@ -28,6 +28,7 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
                 StopReading = true,
                 SitBehind = false,
                 UpdateZone = true,
+                ScrollScale = true,
                 Debug = false,
             };
         end
@@ -91,6 +92,7 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not self:GetPersistence() ) then
                 return;
             end
+            self:Reset();
         end
         
         Addon.DB:UnregisterEvent( 'ADDON_LOADED' );
