@@ -273,9 +273,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         Addon.APP.SetCVars = function( self )
-            SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
-            local Value = self:GetValue( 'MapFade' );
-            SetCVar( 'mapFade',Addon:BoolToInt( Value ) );
+            SetCVar('questLogOpen',Addon:BoolToInt( not self:GetValue( 'PanelColapsed' ) ) );
+
+            SetCVar( 'mapFade',Addon:BoolToInt( self:GetValue( 'MapFade' ) ) );
+
+            SetCVar( 'rotateMinimap',Addon:BoolToInt( self:GetValue( 'MiniRotate' ) ) );
         end
 
         --
