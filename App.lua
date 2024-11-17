@@ -10,7 +10,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @param  string  Index
         --  @param  mixed   Value
-        --  @return void
+        --  @return bool
         Addon.APP.SetValue = function( self,Index,Value )
             return Addon.DB:SetValue( Index,Value );
         end
@@ -21,6 +21,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return mixed
         Addon.APP.GetValue = function( self,Index )
             return Addon.DB:GetValue( Index );
+            --self:Refresh();
         end
 
         --
@@ -55,10 +56,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( not WorldMapFrame:IsShown() and Addon.APP:GetValue( 'AlwaysShow' ) ) then
                         WorldMapFrame:Show();
                     end
+                    return;
                 end
-                if( Addon.APP:GetValue( 'UpdateZone' ) ) then
-                    Addon.APP:UpdateZone();
-                end
+                Addon.APP:UpdateZone();
             end );
             
             -- Pin
@@ -108,6 +108,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             local FrameFaderDriver = CreateFrame( 'Frame',nil,WorldMapFrame );
             FrameFaderDriver:SetScript( 'OnUpdate',function( self,Elapsed )
+                if( Addon.APP:GetValue( 'MapFade' ) ) then
+                    return;
+                end
                 if( not WorldMapFrame:IsMouseOver() ) then
                     WorldMapFrame:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
                 else
@@ -271,7 +274,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.APP.SetCVars = function( self )
             SetCVar('questLogOpen',not self:GetValue( 'PanelColapsed' ) );
-            SetCVar( 'mapFade',0 );
+            local Value = self:GetValue( 'MapFade' );
+            SetCVar( 'mapFade',Addon:BoolToInt( Value ) );
         end
 
         --
@@ -367,6 +371,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return  void
         Addon.APP.UpdateZone = function( self )
+            if( not Addon.APP:GetValue( 'UpdateZone' ) ) then
+                return;
+            end
             if( InCombatLockdown() ) then
                 return;
             end
@@ -409,9 +416,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             
             -- Player icon
             self:UpdatePin();
-            
-            -- Player position
-            self:UpdateZone();
+
+            -- CVars
+            self:SetCVars();
         end
 
         --
@@ -471,9 +478,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
                 -- Zone
                 self:UpdateZone();
-
-                -- CVars
-                self:SetCVars();
             end );
         end
 

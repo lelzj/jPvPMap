@@ -18,6 +18,9 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
                 MapYPos = -48.181,
                 MapScale = 0.866,
                 MapAlpha = 0.2,
+                MapFade = false,
+
+                MiniRotate = true,
 
                 PinAnimDuration = 90,
                 SkullMyAss = 'Pink',

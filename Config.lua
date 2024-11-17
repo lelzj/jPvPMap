@@ -10,13 +10,33 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return table
         Addon.CONFIG.GetSettings = function( self,Instance )
-            local GetGeneral = function()
+            local GetMiniMap = function()
                 local Order = 1;
                 local Settings = {
-                    General = {
+                    MiniMap = {
                         type = 'header',
                         order = Order,
-                        name = 'General',
+                        name = 'Mini Map',
+                    },
+                };
+                Order = Order+1;
+                Settings.MiniRotate = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Rotate Mini Map',
+                    desc = 'If the minimap should rotate based on your movement',
+                    arg = 'MiniRotate',
+                };
+
+                return Settings;
+            end
+            local GetMainMap = function()
+                local Order = 1;
+                local Settings = {
+                    MainMap = {
+                        type = 'header',
+                        order = Order,
+                        name = 'Main Map',
                     },
                 };
                 Order = Order+1;
@@ -68,6 +88,14 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     desc = 'The size of the map in scale',
                     min = .1, max = 3, step = .1,
                     arg = 'MapScale',
+                };
+                Order = Order+1;
+                Settings.MapFade = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Map Fading',
+                    desc = 'If the map should respect the fader',
+                    arg = 'MapFade',
                 };
                 Order = Order+1;
                 Settings.ScrollScale = {
@@ -181,17 +209,27 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 args = {},
             };
 
-            -- General
+            -- Main Map
             local Order = 0;
             Settings.args[ 'tab'..Order ] = {
                 type = 'group',
-                name = 'General',
+                name = 'Main Map',
                 width = 'full',
                 order = Order,
-                args = GetGeneral(),
+                args = GetMainMap(),
             };
 
-            -- General
+            -- Mini Map
+            Order = Order+1;
+            Settings.args[ 'tab'..Order ] = {
+                type = 'group',
+                name = 'Mini Map',
+                width = 'full',
+                order = Order,
+                args = GetMiniMap(),
+            };
+
+            -- Map Pins
             Order = Order+1;
             Settings.args[ 'tab'..Order ] = {
                 type = 'group',
@@ -218,16 +256,16 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             hooksecurefunc( self.Config,'OnCommit',function()
                 -- handle like window close...
-                print( 'OnCommit...' );
+                --print( 'OnCommit...' );
             end );
 
             hooksecurefunc( self.Config,'OnRefresh',function()
                 -- handle like window open...
-                print( 'OnRefresh...' );
+                --print( 'OnRefresh...' );
             end );
 
             hooksecurefunc( self.Config,'OnDefault',function()
-                print( 'OnDefault' );
+                --print( 'OnDefault' );
                 --Addon.CHAT.db:ResetDB();
             end );
 
