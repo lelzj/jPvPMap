@@ -117,28 +117,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            local Values = {
-                .1,
-                .2,
-                .3,
-                .4,
-                .5,
-                .6,
-                .7,
-                .8,
-                .9,
-                1,
-                1.1,
-                1.2,
-                1.3,
-                1.4,
-                1.5,
-                1.6,
-                1.7,
-                1.8,
-                1.9,
-                2,
-            };
+            -- Zooming/Scaling
             local SliderData = {
                 Name = 'MapScale',
                 Step = .1,
@@ -154,37 +133,40 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
             };
             local RangeSlider = Addon.FRAMES:AddRange( SliderData,WorldMapFrame,{
+                -- AddRange initialization calls this
                 Get = function( Index )
                     return self:GetValue( 'MapScale' );
                 end,
+                -- AddRange:OnValueChanged calls this
                 Set = function( Index,Value )
                     print( 'Set',Index,Value)
                     --return self:SetValue( 'MapScale',Value );
                 end,
             } );
+            -- Cause map zooming to control the slider
             WorldMapFrame.ScrollContainer:HookScript( 'OnMouseWheel',function( self,Value )
                 if( not Addon.APP:GetValue( 'ScrollScale' ) ) then
                     return;
                 end
                 local CurrentValue = Addon.APP:GetValue( SliderData.Name );
-                local Direction;
+                local ScrollDirection;
                 if Value > 0 then
-                    Direction = 'up';
+                    ScrollDirection = 'up';
                 else
-                    Direction = 'down';
+                    ScrollDirection = 'down';
                 end
 
                 local MaxValue;
                 local MinValue;
                 local NewValue;
 
-                if Direction == 'up' then
+                if ScrollDirection == 'up' then
                     MaxValue = SliderData.KeyPairs.High.Value;
                     NewValue = CurrentValue + SliderData.Step;
                     if NewValue > MaxValue then
                         return;
                     end
-                elseif Direction == 'down' then
+                elseif ScrollDirection == 'down' then
                     MinValue = SliderData.KeyPairs.Low.Value;
                     NewValue = CurrentValue - SliderData.Step;
                     if NewValue < MinValue then
