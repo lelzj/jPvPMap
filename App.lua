@@ -56,7 +56,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( not WorldMapFrame:IsShown() and Addon.APP:GetValue( 'AlwaysShow' ) ) then
                         WorldMapFrame:Show();
                     end
-                    return;
                 end
                 Addon.APP:UpdateZone();
             end );
