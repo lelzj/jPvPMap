@@ -268,7 +268,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 --print( 'OnDefault' );
                 --Addon.CHAT.db:ResetDB();
             end );
-
         end
 
         self:UnregisterEvent( 'ADDON_LOADED' );
