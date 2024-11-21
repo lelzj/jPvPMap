@@ -144,6 +144,32 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     },
                 };
                 Order = Order+1;
+                Settings.PinPing = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Animation',
+                    desc = 'Pin animation',
+                    arg = 'PinPing',
+                };
+                Order = Order+1;
+                Settings.PinAnimDuration = {
+                    order = Order,
+                    type = 'range',
+                    name = 'Animation Duration',
+                    desc = 'Pin animation duration',
+                    min = 10, max = 120, step = 10,
+                    arg = 'PinAnimDuration',
+                    disabled = not Addon.DB:GetValue( 'PinPing' ),
+                };
+                Order = Order+1;
+                Settings.MatchWorldScale = {
+                    order = Order,
+                    type = 'toggle',
+                    name = 'Pin Scale',
+                    desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
+                    arg = 'MatchWorldScale',
+                };
+                Order = Order+1;
                 Settings.SkullMyAss = {
                     order = Order,
                     type = 'select',
@@ -161,29 +187,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'SkullMyAss',
                 };
                 Order = Order+1;
-                Settings.PinAnimDuration = {
-                    order = Order,
-                    type = 'range',
-                    name = 'Animation Duration',
-                    desc = 'Pin location animation duration',
-                    min = 10, max = 120, step = 10,
-                    arg = 'PinAnimDuration',
-                };
-                Order = Order+1;
                 Settings.ClassColors = {
                     order = Order,
                     type = 'toggle',
                     name = 'Class Colors',
                     desc = 'If group members should show on the map with their respective class colors',
                     arg = 'ClassColors',
-                };
-                Order = Order+1;
-                Settings.MatchWorldScale = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Pin Scale',
-                    desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
-                    arg = 'MatchWorldScale',
                 };
                 -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
                 return Settings;
