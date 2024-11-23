@@ -53,12 +53,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( Event == 'PLAYER_STARTED_MOVING' or Event == 'PLAYER_STARTED_LOOKING' or Event == 'PLAYER_STARTED_TURNING' ) then
                     WorldMapFrame:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
                     if( Addon.APP:GetValue( 'PinPing' ) ) then
-                        Addon.APP:UpdatePin();
+                        Addon.APP:Ping();
                     end
                     if( not WorldMapFrame:IsShown() and Addon.APP:GetValue( 'AlwaysShow' ) ) then
                         WorldMapFrame:Show();
                     end
-                    return;
                 end
                 Addon.APP:UpdateZone();
             end );
@@ -340,10 +339,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        -- Map Unit Update
+        -- Map Unit Pin Animate
         --
         -- @return  void
-        Addon.APP.UpdatePin = function( self )
+        Addon.APP.Ping = function( self )
             if( InCombatLockdown() ) then
                 return;
             end
