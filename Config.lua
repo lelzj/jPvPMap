@@ -162,14 +162,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     disabled = not Addon.DB:GetValue( 'PinPing' ),
                 };
                 Order = Order+1;
-                Settings.MatchWorldScale = {
-                    order = Order,
-                    type = 'toggle',
-                    name = 'Pin Scale',
-                    desc = 'Attempt to match your map position scale to the scale of the world map. Seems to be just a retail thing...where maps are excessively large and player pin winds up being especially tiny by default',
-                    arg = 'MatchWorldScale',
-                };
-                Order = Order+1;
                 Settings.SkullMyAss = {
                     order = Order,
                     type = 'select',

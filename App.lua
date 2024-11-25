@@ -21,7 +21,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return mixed
         Addon.APP.GetValue = function( self,Index )
             return Addon.DB:GetValue( Index );
-            --self:Refresh();
         end
 
         --
@@ -29,7 +28,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.APP.CreateFrames = function( self )
-            -- Verify
             local WorldMapUnitPin = self:GetUnitPin();
             if( not WorldMapUnitPin ) then
                 return;
@@ -60,6 +58,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
                 Addon.APP:UpdateZone();
+                Addon.APP:UpdatePinSize();
             end );
 
             -- Display
@@ -178,60 +177,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            -- Pin
-            if( self:GetValue( 'SkullMyAss' ) == 'Pink' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Purple' );
-            end
-            if( self:GetValue( 'SkullMyAss' ) == 'Blue' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Blue' );
-            end
-            if( self:GetValue( 'SkullMyAss' ) == 'Yellow' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\skull_64' );
-            end
-            if( self:GetValue( 'SkullMyAss' ) == 'Green' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Green' );
-            end
-            if( self:GetValue( 'SkullMyAss' ) == 'Grey' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\skull_64grey' );
-            end
-            if( self:GetValue( 'SkullMyAss' ) == 'Red' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Red' );
-            end
-            if( self:GetValue( 'SkullMyAss' ) == 'Normal' ) then
-                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\WorldMapArrow' );
-            end
-
-            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Grey' );
-            --WorldMapUnitPin:SetPinTexture( 'raid','Interface\\WorldMap\\Skull_64Red' );
-            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Green' );
-            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Blue' );
-
-            if( self:GetValue( 'ClassColors' ) ) then
-                WorldMapUnitPin:SetUseClassColor( 'party',true );
-                WorldMapUnitPin:SetUseClassColor( 'raid',true );
-            else
-                WorldMapUnitPin:SetUseClassColor( 'party',false );
-                WorldMapUnitPin:SetUseClassColor( 'raid',false );
-            end
-
             WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
             
             LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function()
-                local WorldMapUnitPin = self:GetUnitPin();
-                if( not WorldMapUnitPin ) then
-                    return;
-                end
-                WorldMapUnitPin:SetPinSize( 'player',64 );
-                --WorldMapUnitPin:SetPinSize( 'party',64 );
-                --WorldMapUnitPin:SetPinSize( 'raid',64 );
-                WorldMapUnitPin:SetPlayerPingScale( 3 );
-
-                if( self:GetValue( 'MatchWorldScale' ) ) then
-                    if( WorldMapUnitPin:GetEffectiveScale() <= .3 ) then
-                        WorldMapUnitPin:SetPlayerPingScale( 2 * 5 );
-                        WorldMapUnitPin:SetPinSize( 'player',192 );
-                    end
-                end
+                self:UpdatePinSize();
             end );
         end
 
@@ -323,7 +272,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        -- Map Unit Pin
+        -- Get Map Unit Pin
         --
         -- @return  mixed
         Addon.APP.GetUnitPin = function( self )
@@ -339,7 +288,81 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        -- Map Unit Pin Animate
+        -- Update Map Unit Pin Size
+        --
+        -- @return  mixed
+        Addon.APP.UpdatePinSize = function( self )
+            local WorldMapUnitPin = Addon.APP:GetUnitPin();
+            if( not WorldMapUnitPin ) then
+                return;
+            end
+            if( Addon.APP:GetValue( 'Debug' ) ) then
+                Addon.FRAMES:Debug( 'UpdatePinSize call' );
+            end
+
+            local PinScale = 2; -- Initially twice the size of the pin
+            local PinSize = 64;
+            if( WorldMapUnitPin:GetEffectiveScale() <= .2 ) then
+                PinScale = PinScale * 10;
+                PinSize = PinSize * 2;
+            end
+            if( Addon.APP:GetValue( 'Debug' ) ) then
+                Addon.FRAMES:Debug( 'PinScale',PinScale );
+                Addon.FRAMES:Debug( 'PinSize',PinSize );
+            end
+
+            WorldMapUnitPin:SetPlayerPingScale( PinScale );
+            WorldMapUnitPin:SetPinSize( 'player',PinSize );
+            --WorldMapUnitPin:SetPinSize( 'party',64 );
+            --WorldMapUnitPin:SetPinSize( 'raid',64 );
+        end
+
+        --
+        -- Update Map Unit Pin Colors
+        --
+        -- @return  mixed
+        Addon.APP.UpdatePinColors = function( self )
+            local WorldMapUnitPin = Addon.APP:GetUnitPin();
+            if( not WorldMapUnitPin ) then
+                return;
+            end
+            if( Addon.APP:GetValue( 'Debug' ) ) then
+                Addon.FRAMES:Debug( 'UpdatePinColors call' );
+            end
+
+            local PinColor = Addon.APP:GetValue( 'SkullMyAss' );
+            if( PinColor == 'Pink' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Purple' );
+            elseif( PinColor == 'Blue' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Blue' );
+            elseif( PinColor == 'Yellow' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\skull_64' );
+            elseif( PinColor == 'Green' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Green' );
+            elseif( PinColor == 'Grey' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\skull_64grey' );
+            elseif( PinColor == 'Red' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Red' );
+            elseif( PinColor == 'Normal' ) then
+                WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\WorldMapArrow' );
+            end
+
+            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Grey' );
+            --WorldMapUnitPin:SetPinTexture( 'raid','Interface\\WorldMap\\Skull_64Red' );
+            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Green' );
+            --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Blue' );
+
+            if( Addon.APP:GetValue( 'ClassColors' ) ) then
+                WorldMapUnitPin:SetUseClassColor( 'party',true );
+                WorldMapUnitPin:SetUseClassColor( 'raid',true );
+            else
+                WorldMapUnitPin:SetUseClassColor( 'party',false );
+                WorldMapUnitPin:SetUseClassColor( 'raid',false );
+            end
+        end
+
+        --
+        -- Animate Map Unit Pin
         --
         -- @return  void
         Addon.APP.Ping = function( self )
@@ -394,7 +417,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Map Scale
             self:SetScale();
 
-            -- Sit behind
+            -- Map Strata
             local DefaultStrata = WorldMapFrame:GetFrameStrata();
             if( Addon.APP:GetValue( 'SitBehind' ) and DefaultStrata ~= 'MEDIUM' ) then
                 WorldMapFrame:SetFrameStrata( 'MEDIUM' );
@@ -402,16 +425,19 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapFrame:SetFrameStrata( DefaultStrata );
             end
 
-            -- Show map
+            -- Map Show
             if( not WorldMapFrame:IsShown() and self:GetValue( 'AlwaysShow' ) ) then
                 WorldMapFrame:Show();
             end
 
-            -- Position
-            self:SetPosition();
-
-            -- Zone
+            -- Map Zone
             self:UpdateZone();
+
+            -- Pin Size
+            self:UpdatePinSize();
+
+            -- Pin Color
+            self:UpdatePinColors();
 
             -- CVars
             self:SetCVars();
@@ -441,6 +467,21 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
+            -- SetPassThroughButtons
+            --[[
+            hooksecurefunc( WorldMapFrame,'AcquirePin',function( PinTemplate,... )
+                if( not WorldMapFrame.pinPools[ PinTemplate ] ) then
+                    local pinTemplateType = WorldMapFrame.pinTemplateTypes[ PinTemplate ] or 'FRAME';
+                    WorldMapFrame.pinPools[ PinTemplate ] = CreateFramePool( pinTemplateType,WorldMapFrame:GetCanvas(),PinTemplate,OnPinReleased );
+                end
+
+                local pin,newPin = WorldMapFrame.pinPools[ PinTemplate ]:Acquire();
+                if( pin.SetPassThroughButtons ) then
+                    pin.SetPassThroughButtons = nil;
+                end
+            end );
+            ]]
+            
             -- Slash command
             SLASH_JMAP1, SLASH_JMAP2 = '/jm', '/jpm';
             SlashCmdList['JMAP'] = function( Msg,EditBox )
@@ -457,7 +498,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return;
             end
 
-            -- Reaply
             C_Timer.After( 2, function()
                self:Refresh();
             end );
