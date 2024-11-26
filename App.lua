@@ -58,7 +58,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
                 Addon.APP:UpdateZone();
-                Addon.APP:UpdatePinSize();
             end );
 
             -- Display
@@ -300,18 +299,18 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Addon.FRAMES:Debug( 'UpdatePinSize call' );
             end
 
-            local PinScale = 2; -- Initially twice the size of the pin
+            local PingScale = 2; -- Initially twice the size of the pin
             local PinSize = 64;
-            if( WorldMapUnitPin:GetEffectiveScale() <= .2 ) then
-                PinScale = PinScale * 10;
-                PinSize = PinSize * 2;
+            if( WorldMapFrame:GetEffectiveScale() <= .5 ) then
+                PingScale = PingScale * 1.5;
+                PinSize = PinSize * 1.5;
             end
             if( Addon.APP:GetValue( 'Debug' ) ) then
-                Addon.FRAMES:Debug( 'PinScale',PinScale );
+                Addon.FRAMES:Debug( 'PingScale',PingScale );
                 Addon.FRAMES:Debug( 'PinSize',PinSize );
             end
 
-            WorldMapUnitPin:SetPlayerPingScale( PinScale );
+            WorldMapUnitPin:SetPlayerPingScale( PingScale );
             WorldMapUnitPin:SetPinSize( 'player',PinSize );
             --WorldMapUnitPin:SetPinSize( 'party',64 );
             --WorldMapUnitPin:SetPinSize( 'raid',64 );
@@ -345,6 +344,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\Skull_64Red' );
             elseif( PinColor == 'Normal' ) then
                 WorldMapUnitPin:SetPinTexture( 'player','Interface\\WorldMap\\WorldMapArrow' );
+            end
+            local PingWidth,PingHeight = 75,75;
+
+            if( Enum and Enum.PingTextureType and Enum.PingTextureType.Rotation ) then
+                WorldMapUnitPin:SetPlayerPingTexture( Enum.PingTextureType.Rotation,'Interface\\minimap\\UI-Minimap-Ping-Rotate',PingWidth,PingHeight );
             end
 
             --WorldMapUnitPin:SetPinTexture( 'party','Interface\\WorldMap\\Skull_64Grey' );
