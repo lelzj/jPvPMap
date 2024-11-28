@@ -79,6 +79,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 self:SetPosition();
                 self:UpdateZone();
+                self:UpdatePinSize();
             end );
 
             --[[
@@ -174,6 +175,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.APP:SetValue( SliderData.Name,NewValue );
                     Addon.APP:SetScale();
                 end
+                Addon.APP:UpdatePinSize();
             end );
 
             WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
@@ -299,21 +301,44 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Addon.FRAMES:Debug( 'UpdatePinSize call' );
             end
 
-            local PingScale = 2; -- Initially twice the size of the pin
-            local PinSize = 64;
-            if( WorldMapFrame:GetEffectiveScale() <= .5 ) then
-                PingScale = PingScale * 1.5;
-                PinSize = PinSize * 1.5;
+            local PingScale = 8; -- Initially twice the size of the pin
+            local PinSize = 256;
+            local ResizeMethod = 1;
+            local WorldMapScale = WorldMapFrame:GetScale();
+
+            if( Addon:IsRetail() ) then
+                local MapSize = 0;
+                local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
+                if( CurrentZone ) then
+                    local Width,Height;
+                    if( C_Map and C_Map.GetMapWorldSize ) then
+                        Width,Height = C_Map.GetMapWorldSize( CurrentZone );
+                        MapSize = Width * Height;
+                    end
+                end
+                if( MapSize <= 779000 ) then
+                    PingScale = PingScale / 4;
+                    PinSize = PinSize / 4;
+                    ResizeMethod = 2;
+                elseif( MapSize <= 35000000 ) then
+                    ResizeMethod = 'undefined';
+                end
+            else
+                PingScale = PingScale / 4;
+                PinSize = PinSize / 4;
+                ResizeMethod = 3;
             end
             if( Addon.APP:GetValue( 'Debug' ) ) then
                 Addon.FRAMES:Debug( 'PingScale',PingScale );
                 Addon.FRAMES:Debug( 'PinSize',PinSize );
+                Addon.FRAMES:Debug( 'WorldMapScale',WorldMapScale );
+                Addon.FRAMES:Debug( 'ResizeMethod',ResizeMethod );
             end
 
             WorldMapUnitPin:SetPlayerPingScale( PingScale );
             WorldMapUnitPin:SetPinSize( 'player',PinSize );
-            --WorldMapUnitPin:SetPinSize( 'party',64 );
-            --WorldMapUnitPin:SetPinSize( 'raid',64 );
+            WorldMapUnitPin:SetPinSize( 'party',PinSize );
+            WorldMapUnitPin:SetPinSize( 'raid',PinSize );
         end
 
         --
