@@ -336,9 +336,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             WorldMapUnitPin:SetPlayerPingScale( PingScale );
-            WorldMapUnitPin:SetPinSize( 'player',PinSize );
-            WorldMapUnitPin:SetPinSize( 'party',PinSize );
-            WorldMapUnitPin:SetPinSize( 'raid',PinSize );
+            --WorldMapUnitPin:SetPinSize( 'player',PinSize );
+            --WorldMapUnitPin:SetPinSize( 'party',PinSize );
+            --WorldMapUnitPin:SetPinSize( 'raid',PinSize );
         end
 
         --
