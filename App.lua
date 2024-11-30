@@ -50,9 +50,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 if( Event == 'PLAYER_STARTED_MOVING' or Event == 'PLAYER_STARTED_LOOKING' or Event == 'PLAYER_STARTED_TURNING' ) then
                     WorldMapFrame:SetAlpha( Addon.APP:GetValue( 'MapAlpha' ) );
-                    if( Addon.APP:GetValue( 'PinPing' ) ) then
-                        Addon.APP:Ping();
-                    end
+                    Addon.APP:Ping();
                     if( not WorldMapFrame:IsShown() and Addon.APP:GetValue( 'AlwaysShow' ) ) then
                         WorldMapFrame:Show();
                     end
@@ -73,13 +71,17 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Show
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map )
+                local WorldMapUnitPin = self:GetUnitPin();
+                if( not WorldMapUnitPin ) then
+                    return;
+                end
                 local PreviousZone = C_Map.GetBestMapForUnit( 'player' );
                 if( PreviousZone ) then
                     self.PreviousZone = PreviousZone;
                 end
                 self:SetPosition();
                 self:UpdateZone();
-                self:UpdatePinSize();
+                WorldMapUnitPin:SynchronizePinSizes();
             end );
 
             --[[
@@ -175,13 +177,24 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.APP:SetValue( SliderData.Name,NewValue );
                     Addon.APP:SetScale();
                 end
-                Addon.APP:UpdatePinSize();
+                local WorldMapUnitPin = Addon.APP:GetUnitPin();
+                if( not WorldMapUnitPin ) then
+                    return;
+                end
+                WorldMapUnitPin:SynchronizePinSizes();
             end );
 
             WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
             
-            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function()
-                self:UpdatePinSize();
+            -- Interface/AddOns/Blizzard_SharedMapDataProviders/GroupMembersDataProvider.lua
+            LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function( self )
+                local scale = self:GetMap():GetCanvasScale();
+                for unit, size in self.dataProvider:EnumerateUnitPinSizes() do
+                    if self.dataProvider:ShouldShowUnit(unit) then
+                        self:SetPinSize(unit, size / scale);
+                    end
+                end
+                self:SetPlayerPingScale( Addon.APP:GetValue( 'PinAnimScale' ) / scale);
             end );
         end
 
@@ -289,59 +302,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        -- Update Map Unit Pin Size
-        --
-        -- @return  mixed
-        Addon.APP.UpdatePinSize = function( self )
-            local WorldMapUnitPin = Addon.APP:GetUnitPin();
-            if( not WorldMapUnitPin ) then
-                return;
-            end
-            if( Addon.APP:GetValue( 'Debug' ) ) then
-                Addon.FRAMES:Debug( 'UpdatePinSize call' );
-            end
-
-            local PingScale = 8; -- Initially twice the size of the pin
-            local PinSize = 256;
-            local ResizeMethod = 1;
-            local WorldMapScale = WorldMapFrame:GetScale();
-
-            if( Addon:IsRetail() ) then
-                local MapSize = 0;
-                local CurrentZone = C_Map.GetBestMapForUnit( 'player' );
-                if( CurrentZone ) then
-                    local Width,Height;
-                    if( C_Map and C_Map.GetMapWorldSize ) then
-                        Width,Height = C_Map.GetMapWorldSize( CurrentZone );
-                        MapSize = Width * Height;
-                    end
-                end
-                if( MapSize <= 779000 ) then
-                    PingScale = PingScale / 4;
-                    PinSize = PinSize / 4;
-                    ResizeMethod = 2;
-                elseif( MapSize <= 35000000 ) then
-                    ResizeMethod = 'undefined';
-                end
-            else
-                PingScale = PingScale / 4;
-                PinSize = PinSize / 4;
-                ResizeMethod = 3;
-            end
-            if( Addon.APP:GetValue( 'Debug' ) ) then
-                Addon.FRAMES:Debug( 'PingScale',PingScale );
-                Addon.FRAMES:Debug( 'PinSize',PinSize );
-                Addon.FRAMES:Debug( 'WorldMapScale',WorldMapScale );
-                Addon.FRAMES:Debug( 'ResizeMethod',ResizeMethod );
-            end
-
-            WorldMapUnitPin:SetPlayerPingScale( PingScale );
-            --WorldMapUnitPin:SetPinSize( 'player',PinSize );
-            --WorldMapUnitPin:SetPinSize( 'party',PinSize );
-            --WorldMapUnitPin:SetPinSize( 'raid',PinSize );
-        end
-
-        --
         -- Update Map Unit Pin Colors
         --
         -- @return  mixed
@@ -402,8 +362,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not WorldMapUnitPin ) then
                 return;
             end
-
-            WorldMapUnitPin:StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
+            if( Addon.APP:GetValue( 'PinPing' ) ) then
+                WorldMapUnitPin:StartPlayerPing( 1,self:GetValue( 'PinAnimDuration' ) );
+            else
+                WorldMapUnitPin:StartPlayerPing( 1,0 );
+                WorldMapUnitPin:StopPlayerPing();
+            end
         end
 
         --
@@ -462,14 +426,18 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Map Zone
             self:UpdateZone();
 
-            -- Pin Size
-            self:UpdatePinSize();
-
             -- Pin Color
             self:UpdatePinColors();
 
             -- CVars
             self:SetCVars();
+
+            -- Pin Size
+            local WorldMapUnitPin = self:GetUnitPin();
+            if( not WorldMapUnitPin ) then
+                return;
+            end
+            WorldMapUnitPin:SynchronizePinSizes();
         end
 
         --

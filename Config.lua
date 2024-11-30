@@ -186,6 +186,15 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     desc = 'If group members should show on the map with their respective class colors',
                     arg = 'ClassColors',
                 };
+                Order = Order+1;
+                Settings.PinAnimScale = {
+                    order = Order,
+                    type = 'range',
+                    name = 'Animation Scale',
+                    desc = 'Pin animation scale',
+                    min = 1, max = 3, step = 0.5,
+                    arg = 'PinAnimScale',
+                };
                 -- /Interface/FrameXML/UnitPositionFrameTemplates.lua
                 return Settings;
             end
