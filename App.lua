@@ -71,17 +71,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Show
             LibStub( 'AceHook-3.0' ):SecureHookScript( WorldMapFrame,'OnShow',function( Map )
-                local WorldMapUnitPin = self:GetUnitPin();
-                if( not WorldMapUnitPin ) then
-                    return;
-                end
                 local PreviousZone = C_Map.GetBestMapForUnit( 'player' );
                 if( PreviousZone ) then
                     self.PreviousZone = PreviousZone;
                 end
                 self:SetPosition();
                 self:UpdateZone();
-                WorldMapUnitPin:SynchronizePinSizes();
             end );
 
             --[[
@@ -187,7 +182,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             WorldMapUnitPin:SetFrameStrata( 'TOOLTIP' );
             
             -- Interface/AddOns/Blizzard_SharedMapDataProviders/GroupMembersDataProvider.lua
+            --local Orig_SynchronizePinSizes = WorldMapUnitPin.SynchronizePinSizes;
             LibStub( 'AceHook-3.0' ):SecureHook( WorldMapUnitPin,'SynchronizePinSizes',function( self )
+                --Orig_SynchronizePinSizes( WorldMapUnitPin );
+
                 local scale = self:GetMap():GetCanvasScale();
                 for unit, size in self.dataProvider:EnumerateUnitPinSizes() do
                     if self.dataProvider:ShouldShowUnit(unit) then
@@ -497,6 +495,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             C_Timer.After( 2, function()
                self:Refresh();
+               self:Ping();
             end );
         end
 
