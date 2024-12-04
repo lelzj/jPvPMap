@@ -186,8 +186,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 local scale = self:GetMap():GetCanvasScale();
                 for unit, size in self.dataProvider:EnumerateUnitPinSizes() do
                     if( Addon:IsClassic() and unit == 'player' ) then
-                        self:SetFrameStrata( 'TOOLTIP' );
                         size = size+10;
+                        self:SetFrameStrata( 'TOOLTIP' );
                     end
                     if self.dataProvider:ShouldShowUnit(unit) then
                         self:SetPinSize(unit, size / scale);
